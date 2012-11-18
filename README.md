@@ -1,0 +1,4 @@
+Prosjekt-Skjell
+===============
+
+Linux shell

@@ -4,6 +4,7 @@ using namespace std;
 #include <cstdlib>
 #include <string>
 #include <iostream>
+#include <unistd.h>
 
 class Shell{
 private:

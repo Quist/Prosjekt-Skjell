@@ -10,7 +10,7 @@ using namespace std;
 #define	SHELL_H
 
 class Shell{
-    //Private declarations(By default):
+private:
     char currentPath[1024]; 
     void updateCurrentPath();
     

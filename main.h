@@ -9,6 +9,15 @@ using namespace std;
 #ifndef MAIN_H
 #define	MAIN_H
 
+class Main{
+    //Private declarations(By default):
+    char currentPath[1024]; 
+    void updateCurrentPath();
+    
+public:
+    void orderLoop();
+    
+};
 
 
 #endif	/* MAIN_H */

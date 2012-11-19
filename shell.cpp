@@ -33,5 +33,9 @@ void Shell::orderLoop() {
 void Shell::handleUserInput(string userInput){
     if(userInput.compare(0, cmdSetDataPath.length(), cmdSetDataPath) == 0){
         cout << "SUCCESS!\n";
-    }
+    }   
+}
+
+void startProcess(){
+    execvp();
 }

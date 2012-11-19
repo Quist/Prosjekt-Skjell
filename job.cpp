@@ -4,4 +4,5 @@
 using namespace std;
 
 Job::Job(){
+    
 }

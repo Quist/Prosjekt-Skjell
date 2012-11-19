@@ -17,8 +17,13 @@ class Shell{
     
 private:
     char currentPath[1024]; 
+    
     void updateCurrentPath();
     void handleUserInput(string userInput);
+    
+    void startProcess();
+    
+    
     
     //Shell commands:
     string cmdSetPath;

@@ -6,8 +6,8 @@ using namespace std;
 #include <iostream>
 
 
-#ifndef MAIN_H
-#define	MAIN_H
+#ifndef SHELL_H
+#define	SHELL_H
 
 class Shell{
     //Private declarations(By default):

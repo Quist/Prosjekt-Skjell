@@ -1,9 +1,3 @@
-/* 
- * File:   main.h
- * Author: joakim
- *
- * Created on November 18, 2012, 6:04 PM
- */
 
 using namespace std;
 

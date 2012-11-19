@@ -5,10 +5,6 @@ using namespace std;
 #include <string>
 #include <iostream>
 
-
-#ifndef SHELL_H
-#define	SHELL_H
-
 class Shell{
 private:
     char currentPath[1024]; 
@@ -18,7 +14,3 @@ public:
     void orderLoop();
     
 };
-
-
-#endif	/* MAIN_H */
-

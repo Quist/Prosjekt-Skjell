@@ -5,6 +5,7 @@ using namespace std;
 #include <string>
 #include <iostream>
 #include <unistd.h>
+#include <fstream>
 
 //Program includes:
 #include "history.h"
@@ -20,15 +21,12 @@ private:
     
     void updateCurrentPath();
     void handleUserInput(string userInput);
-    
+    void readFile(string fileName);
     void startProcess();
     
     
     
     //Shell commands:
     string cmdSetPath;
-    string cmdSetDataPath;
-    
-
-    
+    string cmdSetDataPath;    
 };

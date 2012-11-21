@@ -1,6 +1,6 @@
 
 #include "shell.h"
-
+#include <sys/wait.h>
 using namespace std;
 
 int main() {
@@ -8,6 +8,7 @@ int main() {
     shell.orderLoop();
     return 0;
 }
+
 
 Shell::Shell(){
     cmdSetPath = "PATH=";
@@ -33,7 +34,9 @@ void Shell::orderLoop() {
 void Shell::handleUserInput(string userInput){
     if(userInput.compare(0, cmdSetDataPath.length(), cmdSetDataPath) == 0){
         cout << "SUCCESS!\n";
-    }   
+    } else {
+        startProcess();
+    }
 }
 
 void Shell::readFile(string fileName) {
@@ -54,6 +57,30 @@ void Shell::readFile(string fileName) {
 	inFile.close();
 }
 
-void startProcess(){
-    execvp();
+void Shell::startProcess(){
+    pid_t pid;
+    int status;
+    char test[] = "ls";
+    
+    char* ptr[1024];
+    for(int i = 0; i < 1024; i++){
+        ptr[i] = &currentPath[i];
+    }
+        
+    char *args[] = {"1", "\0"};
+    
+    if( (pid = fork()) < 0){
+        //fork failed
+        cout <<"Fork Failed";
+        exit(1);
+    }
+    else if(pid == 0){   //This is done by the child process
+        if( execvpe(test, args, ptr) < 0){
+            cout << "Command failed";
+            exit(1);
+        }
+    } else {
+        while (wait(&status) != pid)  ;
+    }
 }
+

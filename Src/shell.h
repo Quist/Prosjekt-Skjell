@@ -3,6 +3,7 @@ using namespace std;
 
 #include <cstdlib>
 #include <string>
+#include <fstream>
 #include <iostream>
 #include <unistd.h>
 
@@ -20,6 +21,7 @@ private:
     
     void updateCurrentPath();
     void handleUserInput(string userInput);
+	void readFile(string fileName);
     
     void startProcess();
     

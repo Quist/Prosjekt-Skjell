@@ -36,6 +36,24 @@ void Shell::handleUserInput(string userInput){
     }   
 }
 
+void Shell::readFile(string fileName) {
+	string cmd;
+	ifstream inFile;
+	inFile.open(fileName);
+
+	if(inFile.is_open()) {
+		while(!inFile.eof())
+			{
+				getline(inFile, cmd);
+				handleUserInput(cmd);
+			}
+	} else
+	{
+		cout<<"Cant find " + fileName+"\n";
+	}
+	inFile.close();
+}
+
 void startProcess(){
     execvp();
 }

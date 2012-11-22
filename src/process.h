@@ -11,4 +11,5 @@ class Process{
 
 private:
     pid_t pid;  //Process ID
+    char **args;
 };

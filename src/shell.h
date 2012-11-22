@@ -6,6 +6,7 @@ using namespace std;
 #include <iostream>
 #include <unistd.h>
 #include <fstream>
+#include <list>
 
 //Program includes:
 #include "history.h"
@@ -22,6 +23,7 @@ private:
     void updateCurrentPath();
     void handleUserInput(string userInput);
     void readFile(string fileName);
+	void writeToFile(string fileName, list<string> l);
     void startProcess();
     
     

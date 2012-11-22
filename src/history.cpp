@@ -3,35 +3,59 @@ using namespace std;
 #include "history.h"
 
 History::History() {
-   lastGet = 0;
-   MAX_HISTORY=10;
+   lastGetCommand = 0;
+   maxHistoryCommand = 0;
+   
+   maxHistoryExitStat = 0;
 }
 
-void History::add(string newCommand) {
+void History::addCommand(string newCommand) {
 
-   for(int i = 0; i < MAX_HISTORY; i++) {
+   for(int i = 0; i < maxHistoryCommand; i++) {
       commands[i+1] = commands[i];  
    }
 
    commands[0] = newCommand;
 
-   lastGet = 0;
+   lastGetCommand = 0;
+   if(maxHistoryCommand < 10)
+      maxHistoryCommand++;
 }
 
-string History:: getNext() {
-   if(lastGet == MAX_HISTORY) {
-      return commands[MAX_HISTORY];
+string History:: getNextCommand() {
+   if(lastGetCommand == maxHistoryCommand) {
+      return commands[maxHistoryCommand];
    }
    else {
-      return commands[lastGet++];
+      return commands[lastGetCommand++];
    }
 }
 
-string History:: getPrevious() {
-   if(lastGet == 0) {
+string History:: getPreviousCommand() {
+   if(lastGetCommand == 0) {
       return commands[0];
    }
    else {
-      return commands[--lastGet];
+      return commands[--lastGetCommand];
+   }
+}
+
+void History::addExitStat(string newExitStat) {
+
+   for(int i = 0; i < maxHistoryExitStat; i++) {
+      exitStat[i+1] = exitStat[i];  
+   }
+
+   exitStat[0] = newExitStat;
+
+   if(maxHistoryExitStat < 10)
+      maxHistoryExitStat++;
+}
+
+string History::getExitStat(int i) {
+   if(i <= maxHistoryExitStat) {
+      if(i > 0) {
+         return exitStat[i];
+      }
    }
 }

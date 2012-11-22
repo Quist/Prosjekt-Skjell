@@ -6,7 +6,6 @@ History::History() {
    lastGetCommand = 0;
    maxHistoryCommand = 0;
    
-   lastGetExitStat = 0;
    maxHistoryExitStat = 0;
 }
 
@@ -49,25 +48,14 @@ void History::addExitStat(string newExitStat) {
 
    exitStat[0] = newExitStat;
 
-   lastGetExitStat = 0;
    if(maxHistoryExitStat < 10)
       maxHistoryExitStat++;
 }
 
-string History:: getNextExitStat() {
-   if(lastGetExitStat == maxHistoryExitStat) {
-      return exitStat[maxHistoryExitStat];
-   }
-   else {
-      return exitStat[lastGetExitStat++];
-   }
-}
-
-string History:: getPreviousExitStat() {
-   if(lastGetExitStat == 0) {
-      return exitStat[0];
-   }
-   else {
-      return exitStat[--lastGetExitStat];
+string History::getExitStat(int i) {
+   if(i <= maxHistoryExitStat) {
+      if(i > 0) {
+         return exitStat[i];
+      }
    }
 }

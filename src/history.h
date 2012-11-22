@@ -8,7 +8,6 @@ private:
    string exitStat[10];
    int lastGetCommand;
    int maxHistoryCommand;
-   int lastGetExitStat;
    int maxHistoryExitStat;
 
 public:
@@ -18,8 +17,7 @@ public:
    string getPreviousCommand();
    void addCommand(string newCommand);
 
-   string getNextExitStat();
-   string getPreviousExitStat();
+   string getExitStat(int i);
    void addExitStat(string newExitStat);
 
 };

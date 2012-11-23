@@ -1,13 +1,11 @@
 Prosjekt-Skjell
 ===============
-Henning > all
-jepp
 Linux shell
-Emil tester lol
-Test
 
 
 
-KJEMPEVIKTIG
+
 =======
-Test
+Compile with this command to avoid warnings:
+ g++ shell.cpp -Wno-write-strings
+

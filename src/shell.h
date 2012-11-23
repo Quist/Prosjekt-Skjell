@@ -10,7 +10,7 @@ using namespace std;
 #include <fstream>
 #include <list>
 #include <termios.h>
-#include <sys/stat.h>;
+#include <sys/stat.h>
 
 //Program includes:
 #include "history.h"

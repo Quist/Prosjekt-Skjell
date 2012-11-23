@@ -11,7 +11,6 @@ int main() {
 
 Shell::Shell() {
     initShell();
-    updateCurrentPath();
     setStartPath();
     cmdSetPath = "PATH=";
     cmdSetDataPath = "DATA=";

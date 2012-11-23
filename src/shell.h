@@ -6,6 +6,7 @@ using namespace std;
 #include <iostream>
 #include <unistd.h>
 #include <fstream>
+#include <list>
 
 //Program includes:
 #include "history.h"
@@ -24,7 +25,9 @@ private:
     void readFile(string fileName);
     void exampleStartProcess();
     void startProcess(const char* command);
-    
+
+    void startProcess();
+    void writeToFile(string fileName, list<string> l);
     
     
     //Shell commands:

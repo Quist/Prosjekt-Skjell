@@ -5,13 +5,13 @@ using namespace std;
 
 int main() {
     Shell shell;
-
     shell.orderLoop();
     return 0;
 }
 
+Shell::Shell() {
 
-Shell::Shell(){
+    updateCurrentPath();
     cmdSetPath = "PATH=";
     cmdSetDataPath = "DATA=";
 }
@@ -23,7 +23,7 @@ void Shell::updateCurrentPath() {
 
 void Shell::orderLoop() {
     string userInput;
-    updateCurrentPath();
+
     while (true) {
         cout << "SHELL-MOFO - >>> ";
         getline(cin, userInput);
@@ -31,8 +31,8 @@ void Shell::orderLoop() {
     }
 }
 
-void Shell::handleUserInput(string userInput){
-    if(userInput.compare(0, cmdSetDataPath.length(), cmdSetDataPath) == 0){
+void Shell::handleUserInput(string userInput) {
+    if (userInput.compare(0, cmdSetDataPath.length(), cmdSetDataPath) == 0) {
         cout << "SUCCESS!\n";
     } else {
         const char* cmd = userInput.c_str();
@@ -40,65 +40,72 @@ void Shell::handleUserInput(string userInput){
     }
 }
 
-
-
-void Shell::startProcess(const char* command){
+void Shell::startProcess(const char* command) {
     pid_t pid;
-    int status;  
-    
-    char  *const parmList[] = {"", NULL};
-    if( (pid = fork()) < 0){
+    int status;
+
+    char *const parmList[] = {"", NULL};
+    if ((pid = fork()) < 0) {
         //fork failed
-        cout <<"Fork Failed\n";
+        cout << "Fork Failed\n";
         exit(1);
-    }
-    else if(pid == 0){   //This is done by the child process
-        if( execvp(command, parmList) < 0){
+    } else if (pid == 0) { //This is done by the child process
+        if (execvp(command, parmList) < 0) {
             cout << "Command failed\n";
             exit(1);
         }
     } else {
-        while (wait(&status) != pid)  ;
+        while (wait(&status) != pid);
     }
 }
 
-
-
-void Shell::exampleStartProcess(){
+void Shell::exampleStartProcess() {
     pid_t pid;
-    int status;  
-    
-    char  *const parmList[] = {"/bin/ls/", "-l", NULL};
-    
-    if( (pid = fork()) < 0){
+    int status;
+
+    char *const parmList[] = {"/bin/ls/", "-l", NULL};
+
+    if ((pid = fork()) < 0) {
         //fork failed
-        cout <<"Fork Failed";
+        cout << "Fork Failed";
         exit(1);
-    }
-    else if(pid == 0){   //This is done by the child process
-        if( execvp("lsMOFO", parmList) < 0){
+    } else if (pid == 0) { //This is done by the child process
+        if (execvp("lsMOFO", parmList) < 0) {
             cout << "Command failed\n";
             exit(1);
         }
     } else {
-        while (wait(&status) != pid)  ;
-        cout <<"SYSYEM CALL IS FINISHED, motherfucker\n";
+        while (wait(&status) != pid);
+        cout << "SYSYEM CALL IS FINISHED, motherfucker\n";
     }
 }
 
 void Shell::readFile(string fileName) {
-	string cmd;
-	ifstream inFile;
-	//inFile.open(fileName);
-	if(inFile.is_open()) {
-		while(!inFile.eof())
-			{
-				getline(inFile, cmd);
-				handleUserInput(cmd);
-			}
-	} else
-	{
-		cout<<"Cant find " + fileName+"\n";
-	}
-	inFile.close();
+    string cmd;
+    ifstream inFile;
+    inFile.open(fileName.c_str());
+
+    if (inFile.is_open()) {
+        while (!inFile.eof()) {
+            getline(inFile, cmd);
+            handleUserInput(cmd);
+        }
+    } else {
+        cout << "Cant find " + fileName + "\n";
+    }
+    inFile.close();
 }
+
+void Shell::writeToFile(string fileName, list<string> l) {
+    string tmp;
+    ofstream toFile;
+    toFile.open(fileName.c_str(), ios::app);
+    while (!l.empty()) {
+        tmp = l.front();
+        l.pop_front();
+        toFile << tmp << endl;
+    }
+    toFile.close();
+}
+
+

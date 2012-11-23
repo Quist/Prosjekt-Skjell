@@ -5,13 +5,19 @@ class History{
 
 private:
    string commands[10];
-   int lastGet;
-   int MAX_HISTORY;
+   string exitStat[10];
+   int lastGetCommand;
+   int maxHistoryCommand;
+   int maxHistoryExitStat;
 
 public:
    History();
-   string getNext();
-   string getPrevious();
-   void add(string newCommand);
+
+   string getNextCommand();
+   string getPreviousCommand();
+   void addCommand(string newCommand);
+
+   string getExitStat(int i);
+   void addExitStat(string newExitStat);
 
 };

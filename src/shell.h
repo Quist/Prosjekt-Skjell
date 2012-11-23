@@ -7,6 +7,7 @@ using namespace std;
 #include <unistd.h>
 #include <fstream>
 #include <list>
+#include <termios.h>
 
 //Program includes:
 #include "history.h"
@@ -18,8 +19,15 @@ class Shell{
     Shell();
     
 private:
-    char currentPath[1024]; 
     
+    pid_t shellPGID;    
+    struct termios shellMode;
+    int foregroundTerminal;
+    int interactive;
+    
+    char currentPath[1024];     
+    
+    void initShell();
     void updateCurrentPath();
     void handleUserInput(string userInput);
     void readFile(string fileName);

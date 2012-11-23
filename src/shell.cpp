@@ -10,10 +10,53 @@ int main() {
 }
 
 Shell::Shell() {
-
+    initShell();
     updateCurrentPath();
     cmdSetPath = "PATH=";
     cmdSetDataPath = "DATA=";
+}
+
+/*
+ * Initializes the shell.
+ * Checks if the shell is interactive.
+ * If not, 
+ *  
+ */
+void Shell::initShell(){
+    foregroundTerminal = STDIN_FILENO; 
+    interactive = isatty(foregroundTerminal); // Checks if refering to terminal
+    
+    if(interactive){
+        //Waits until the shell becomes active.
+        shellPGID = getpgrp();
+        while (tcgetpgrp(foregroundTerminal) != shellPGID){
+            kill(-shellPGID, SIGTTIN);            
+            shellPGID = getpgrp();
+        }
+        
+       //Ignores interactive and job signals:
+        signal(SIGINT, SIG_IGN);
+        signal(SIGQUIT, SIG_IGN);
+        signal(SIGTSTP, SIG_IGN);
+        signal(SIGTTIN, SIG_IGN);
+        signal(SIGTTOU, SIG_IGN);
+        signal(SIGCHLD, SIG_IGN);
+
+        //Put our shell in its own process group
+        shellPGID = getpid();
+        if(setpgid (shellPGID, shellPGID) < 0){
+            cout << "ERROR: Could not put the shell in it's own process group";
+            exit(1);
+        }
+        
+        //Grabs controll of the terminal. We are now the foreground terminal.
+        tcsetpgrp(foregroundTerminal, shellPGID);
+        
+        /* Save default terminal attributes for shell.  */
+        tcgetattr (foregroundTerminal, &shellMode);
+        
+    }
+
 }
 
 void Shell::updateCurrentPath() {
@@ -27,6 +70,7 @@ void Shell::orderLoop() {
     while (true) {
         cout << "SHELL-MOFO - >>> ";
         getline(cin, userInput);
+        cout << "\n";
         handleUserInput(userInput);
     }
 }
@@ -54,8 +98,6 @@ void Shell::startProcess(const char* command) {
             cout << "Command failed\n";
             exit(1);
         }
-    } else {
-        while (wait(&status) != pid);
     }
 }
 

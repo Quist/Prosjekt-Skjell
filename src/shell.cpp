@@ -11,14 +11,23 @@ int main() {
 
 Shell::Shell() {
 
-    updateCurrentPath();
+    setStartPath();
     cmdSetPath = "PATH=";
     cmdSetDataPath = "DATA=";
 }
 
-void Shell::updateCurrentPath() {
+void Shell::setStartPath() {
     char *currentPathPtr = currentPath;
     getcwd(currentPathPtr, 1024);
+}
+
+void Shell::updateCurrentPath(char newPath[]) {
+	struct stat st;
+	if(stat(newPath, &st) == 0 && (((st.st_mode) & S_IFMT) == S_IFDIR)) {
+		strncpy(currentPath, newPath, 1024);
+	} else {
+		cout<<"Directory does not exist.";
+	}
 }
 
 void Shell::orderLoop() {

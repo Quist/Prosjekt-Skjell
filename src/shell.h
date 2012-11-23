@@ -22,7 +22,8 @@ private:
     void updateCurrentPath();
     void handleUserInput(string userInput);
     void readFile(string fileName);
-    void startProcess();
+    void exampleStartProcess();
+    void startProcess(const char* command);
     
     
     

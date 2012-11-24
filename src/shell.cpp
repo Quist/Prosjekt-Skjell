@@ -1,6 +1,7 @@
 
 #include "shell.h"
-#include <sys/wait.h>
+
+
 using namespace std;
 
 int main() {
@@ -115,27 +116,27 @@ void Shell::test(string cmd) {
 }
 
 void Shell::launchJob(Job *j, int foreground){
-    Process p* = j.firstProcess;
+    Process *p = j->firstProcess;
     pid_t pid;
     int outfile;
-    int infile = j.stdin;
+    int infile = j->stdin;
     
     pid = fork();
     
      //Child:
     if(pid == 0){      
-        launchProcess(p, j.pgid,0,0,0, foreground);
+        launchProcess(p, j->pgid,0,0,0, foreground);
     } else if (pid < 0) {
         perror("fork");
         exit(1);
     } else { //parent:
-        p.pid = pid;
+        p->pid = pid;
         if(interactive){
             
             //Sets the jobs process group id to the first process pid.
-            if(!j.pgid){
-                j.pgid = pid;
-                setpgid (pid, j.pgid);
+            if(!j->pgid){
+                j->pgid = pid;
+                setpgid (pid, j->pgid);
             }            
         }        
     }
@@ -144,42 +145,95 @@ void Shell::launchJob(Job *j, int foreground){
        waitForJob(j); 
     }
     else if(foreground){
-        putJobInForground(j, 0);
+        putJobInForeground(j, 0);
     }else{
         putJobInBackground(j,0);
     }
     
 }
 
-void Shell::putJobInForeground(Job* j, int cont) {
+void Shell::putJobInForeground(Job *j, int cont) {
     //Gives the terminal to the job:
-    tcsetpgrp(shell_terminal, j->pgid);
+    tcsetpgrp(foregroundTerminal, j->pgid);
 
     //Sends continue signal to the job:
     if (cont) {
-        tcsetattr(foregroundTerminal,TCSADRAIN, &j.tmodes);
+        tcsetattr(foregroundTerminal,TCSADRAIN, &j->tmodes);
         if (kill(-j->pgid, SIGCONT) < 0)
             perror("kill (SIGCONT)");
     }
     
-    waitForJob(*j);
+    waitForJob(j);
 
     //Put the shell back in the foreground.
     tcsetpgrp(foregroundTerminal, shellPGID);
 
     // Restore the shell's terminal modes.
-    tcgetattr(foregroundTerminal, &j.tmodes);
+    tcgetattr(foregroundTerminal, &j->tmodes);
     tcsetattr(foregroundTerminal, TCSADRAIN, &shellMode);
 
 }
 
-void Shell::putJobInBackground(Job* j, int cont) {
+void Shell::putJobInBackground(Job *j, int cont) {
     // Send the job a continue signal:
     if (cont) {
-        if (kill(-j.pgid, SIGCONT) < 0) {
+        if (kill(-j->pgid, SIGCONT) < 0) {
             perror("kill (SIGCONT)");
         }
     }
+}
+
+int Shell::markProcessStatus(pid_t pid, int status){
+    Job *j;
+    Process *p;
+    
+    if(pid > 0){
+         for(j = firstJob; j; j = j->nextJob){
+             for(p = j->firstProcess; p; p= p->nextProcess){
+                 /*Maybe change so only the process with the right pid is called.
+                  * The check is now done in the process method.
+                 */
+                 return p->markProcessStatus(pid, status);
+             }
+         }
+    } else if(pid == 0 /*||errno == ECHILD*/){
+        //No processes to update
+        return -1;
+    } else {
+        //Error handler:
+        perror("waitpid");
+        return -1;
+    }
+}
+
+void Shell::waitForJob(Job *j) {
+    int status;
+    pid_t pid;
+
+    do {
+        pid = waitpid(WAIT_ANY, &status, WUNTRACED);
+    } while (!markProcessStatus(pid, status)
+            && !jobIsStopped(j)
+            && !jobIsCompleted(j));
+}
+
+//Return true if all processes in the job have stopped or completed. 
+int Shell::jobIsStopped(Job *j) {
+    Process *p;
+    for (p = j->firstProcess; p; p = p->nextProcess)
+        if (!p->completed && !p->stopped)
+            return 0;
+    return 1;
+}
+
+//Return true if all processes in the job have completed.
+int Shell::jobIsCompleted(Job *j) {
+    Process *p;
+
+    for (p = j->firstProcess; p; p = p->nextProcess)
+        if (!p->completed)
+            return 0;
+    return 1;
 }
 
 
@@ -235,49 +289,6 @@ void Shell::launchProcess(Process *p, pid_t pgid, int infile, int outfile,
 
 }
 
-
-void Shell::startProcess(const char* command) {
-    /*
-    pid_t pid;
-    int status;
-
-    char *const parmList[] = {"", NULL};
-    if ((pid = fork()) < 0) {
-        //fork failed
-        cout << "Fork Failed\n";
-        exit(1);
-    } else if (pid == 0) { //This is done by the child process
-        if (execvp(command, parmList) < 0) {
-            cout << "Command failed\n";
-            exit(1);
-        }
-    }
-     * */
-}
-
-void Shell::exampleStartProcess() {
-    /*
-     
-    pid_t pid;
-    int status;
-
-    char *const parmList[] = {"/bin/ls/", "-l", NULL};
-
-    if ((pid = fork()) < 0) {
-        //fork failed
-        cout << "Fork Failed";
-        exit(1);
-    } else if (pid == 0) { //This is done by the child process
-        if (execvp("lsMOFO", parmList) < 0) {
-            cout << "Command failed\n";
-            exit(1);
-        }
-    } else {
-        while (wait(&status) != pid);
-        cout << "SYSYEM CALL IS FINISHED, motherfucker\n";
-    }
-     */
-}
 
 void Shell::readFile(string fileName) {
     string cmd;

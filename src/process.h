@@ -1,5 +1,8 @@
 using namespace std;
 
+#ifndef PROCESS_H
+#define PROCESS_H
+
 #include <cstdlib>
 #include <unistd.h>
 #include <sys/stat.h>
@@ -11,15 +14,21 @@ using namespace std;
  * Keeps track of the next process in a linked list.
  */
 
-class Process{
-
+class Process {
 public:
-    char **args; //Arguments to process
-    
-    Process(char **arguments);
-    
-private:
-    //pid_t pid; //Process ID
+    Process(char **args);
+    int markProcessStatus(pid_t pid, int status);
 
-    //Process *nextProcess;
+    char **args; //Arguments to process
+    Process *nextProcess;  
+ 
+    pid_t pid; //Process ID
+    int status;
+    int stopped;
+    int completed;
+
+private:
+
 };
+
+#endif

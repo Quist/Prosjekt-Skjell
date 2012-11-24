@@ -1,16 +1,21 @@
 
 using namespace std;
 
+#ifndef JOB_H
+#define JOB_H
+
 #include <cstdlib>
+#include <unistd.h>
 
 //Program includes:
-#include "process.cpp"
+#include "process.h"
 
 /* Structure for a job.
  * Processes in the job are stored in a linked list.
  */
 class Job {
 public:
+    Job();
     int stdin, stdout, stderr; /* standard i/o channels */
     Process *firstProcess;
     Job *nextJob;
@@ -18,7 +23,8 @@ public:
     struct termios tmodes;      /* saved terminal modes */
     
     
-private:
-    
+private:    
 
 };
+
+#endif

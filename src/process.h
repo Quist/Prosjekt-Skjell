@@ -1,7 +1,8 @@
 using namespace std;
 
 #include <cstdlib>
-
+#include <unistd.h>
+#include <sys/stat.h>
 //Program includes:
 
 
@@ -11,11 +12,14 @@ using namespace std;
  */
 
 class Process{
-    
- public:
 
-private:
-    pid_t pid;  //Process ID
+public:
     char **args; //Arguments to process
-    Process *nextProcess;
+    
+    Process(char **arguments);
+    
+private:
+    //pid_t pid; //Process ID
+
+    //Process *nextProcess;
 };

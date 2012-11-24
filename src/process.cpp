@@ -3,6 +3,6 @@
 
 using namespace std;
 
-Process::Process(){
-    
+Process::Process(char **args){
+    this->args = args;
 }

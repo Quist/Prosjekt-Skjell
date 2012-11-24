@@ -11,9 +11,11 @@ using namespace std;
 #include <list>
 #include <termios.h>
 #include <sys/stat.h>
+#include <time.h>
 
 //Program includes:
 #include "history.h"
+#include "process.cpp"
 
 class Shell {
 public:
@@ -29,15 +31,20 @@ private:
 
     char currentPath[1024];
 
+    void test(string cmd);
+    
     void initShell();
     void setStartPath();
     void updateCurrentPath(char newPath[]);
     void handleUserInput(string userInput);
     void readFile(string fileName);
+    
     void exampleStartProcess();
     void startProcess(const char* command);
-
     void startProcess();
+    void launchProcess(Process *p, pid_t pgid, int infile, int outfile,
+        int errfile, int foreground);
+    
     void writeToFile(string fileName, list<string> l);
 
 

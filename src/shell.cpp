@@ -59,7 +59,6 @@ void Shell::initShell(){
 
 }
 
-
 void Shell::setStartPath() {
     char *currentPathPtr = currentPath;
     getcwd(currentPathPtr, 1024);
@@ -80,7 +79,6 @@ void Shell::orderLoop() {
     while (true) {
         cout << "SHELL-MOFO - >>> ";
         getline(cin, userInput);
-        cout << "\n";
         handleUserInput(userInput);
     }
 }
@@ -90,11 +88,87 @@ void Shell::handleUserInput(string userInput) {
         cout << "SUCCESS!\n";
     } else {
         const char* cmd = userInput.c_str();
-        startProcess(cmd);
-    }
+       // startProcess(cmd);
+        test(userInput);
+    }  
 }
 
+void Shell::test(string cmd) {
+
+    char *cString;
+    char *tokens[10];
+    
+    cString = new char [cmd.size() + 1];
+    strcpy(cString, cmd.c_str());
+    char *token = strtok(cString, " ");
+
+    int i = 0;
+    while (token != NULL) {
+        tokens[i] = token;
+        i++;
+        token = strtok(NULL, " ");
+    }
+    
+
+    Process *p = new Process(&*tokens);
+    launchProcess(p, 0, 0,0,0,1 );
+}
+
+void Shell::launchProcess(Process *p, pid_t pgid, int infile, int outfile,
+        int errfile, int foreground){
+    
+    pid_t pid;
+    
+    if(interactive){
+        pid = getpid();
+        if(pgid == 0){
+            pgid = pid;
+        }
+        setpgid(pid, pgid);
+        
+        if(foreground){
+            tcsetpgrp(foregroundTerminal, pgid);
+        }
+        
+        /* Since the process forked of the terminal and the terminal ignores
+         * signals -> We have to set signal handling back to default for the 
+         * process         
+         */
+        signal(SIGINT, SIG_DFL);
+        signal(SIGQUIT, SIG_DFL);
+        signal(SIGTSTP, SIG_DFL);
+        signal(SIGTTIN, SIG_DFL);
+        signal(SIGTTOU, SIG_DFL);
+        signal(SIGCHLD, SIG_DFL);
+    }
+    
+    
+    /* Sets file descriptor. Pointer to the details of open files in kernel.
+     * Sets the standard input/output channel 
+     */
+    if (infile != STDIN_FILENO) {
+        dup2(infile, STDIN_FILENO);
+        close(infile);
+    }
+    if (outfile != STDOUT_FILENO) {
+        dup2(outfile, STDOUT_FILENO);
+        close(outfile);
+    }
+    if (errfile != STDERR_FILENO) {
+        dup2(errfile, STDERR_FILENO);
+        close(errfile);
+    }
+    
+    //Executes the new process and exits after the execution.
+    execvp(p->args[0], p->args);
+    perror("execvp");
+    exit(1);
+
+}
+
+
 void Shell::startProcess(const char* command) {
+    /*
     pid_t pid;
     int status;
 
@@ -109,9 +183,12 @@ void Shell::startProcess(const char* command) {
             exit(1);
         }
     }
+     * */
 }
 
 void Shell::exampleStartProcess() {
+    /*
+     
     pid_t pid;
     int status;
 
@@ -130,6 +207,7 @@ void Shell::exampleStartProcess() {
         while (wait(&status) != pid);
         cout << "SYSYEM CALL IS FINISHED, motherfucker\n";
     }
+     */
 }
 
 void Shell::readFile(string fileName) {

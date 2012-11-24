@@ -16,6 +16,7 @@ using namespace std;
 //Program includes:
 #include "history.h"
 #include "process.cpp"
+#include "job.cpp"
 
 class Shell {
 public:
@@ -41,9 +42,12 @@ private:
     
     void exampleStartProcess();
     void startProcess(const char* command);
-    void startProcess();
+    
     void launchProcess(Process *p, pid_t pgid, int infile, int outfile,
         int errfile, int foreground);
+    void launchJob(Job *j, int foreground);
+    void putJobInForeground(Job *j, int cont);
+    void putJobInBackground(Job *j, int cont);
     
     void writeToFile(string fileName, list<string> l);
 

@@ -114,6 +114,75 @@ void Shell::test(string cmd) {
     launchProcess(p, 0, 0,0,0,1 );
 }
 
+void Shell::launchJob(Job *j, int foreground){
+    Process p* = j.firstProcess;
+    pid_t pid;
+    int outfile;
+    int infile = j.stdin;
+    
+    pid = fork();
+    
+     //Child:
+    if(pid == 0){      
+        launchProcess(p, j.pgid,0,0,0, foreground);
+    } else if (pid < 0) {
+        perror("fork");
+        exit(1);
+    } else { //parent:
+        p.pid = pid;
+        if(interactive){
+            
+            //Sets the jobs process group id to the first process pid.
+            if(!j.pgid){
+                j.pgid = pid;
+                setpgid (pid, j.pgid);
+            }            
+        }        
+    }
+
+    if(!interactive){
+       waitForJob(j); 
+    }
+    else if(foreground){
+        putJobInForground(j, 0);
+    }else{
+        putJobInBackground(j,0);
+    }
+    
+}
+
+void Shell::putJobInForeground(Job* j, int cont) {
+    //Gives the terminal to the job:
+    tcsetpgrp(shell_terminal, j->pgid);
+
+    //Sends continue signal to the job:
+    if (cont) {
+        tcsetattr(foregroundTerminal,TCSADRAIN, &j.tmodes);
+        if (kill(-j->pgid, SIGCONT) < 0)
+            perror("kill (SIGCONT)");
+    }
+    
+    waitForJob(*j);
+
+    //Put the shell back in the foreground.
+    tcsetpgrp(foregroundTerminal, shellPGID);
+
+    // Restore the shell's terminal modes.
+    tcgetattr(foregroundTerminal, &j.tmodes);
+    tcsetattr(foregroundTerminal, TCSADRAIN, &shellMode);
+
+}
+
+void Shell::putJobInBackground(Job* j, int cont) {
+    // Send the job a continue signal:
+    if (cont) {
+        if (kill(-j.pgid, SIGCONT) < 0) {
+            perror("kill (SIGCONT)");
+        }
+    }
+}
+
+
 void Shell::launchProcess(Process *p, pid_t pgid, int infile, int outfile,
         int errfile, int foreground){
     

@@ -17,7 +17,7 @@ int Process::markProcessStatus(pid_t pid, int status) {
         } else {
             completed = 1;
             if (WIFSIGNALED(status)) {
-                cout << "ERROR: Process terminated by signal\n";
+                std::cout << "ERROR: Process terminated by signal\n";
             }
             return 0;
         }

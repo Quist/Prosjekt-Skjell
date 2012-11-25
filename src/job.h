@@ -6,6 +6,7 @@ using namespace std;
 
 #include <cstdlib>
 #include <unistd.h>
+#include <termios.h>
 
 //Program includes:
 #include "process.h"

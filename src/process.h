@@ -1,4 +1,3 @@
-using namespace std;
 
 #ifndef PROCESS_H
 #define PROCESS_H
@@ -6,6 +5,7 @@ using namespace std;
 #include <cstdlib>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <iostream>
 //Program includes:
 
 

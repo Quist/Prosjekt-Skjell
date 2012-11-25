@@ -15,6 +15,7 @@ Shell::Shell() {
 	setStartPath();
 	cmdSetPath = "PATH=";
 	cmdSetDataPath = "DATA=";
+    firstJob = NULL;
 }
 
 /*
@@ -194,6 +195,7 @@ void Shell::testJob(string cmd) {
 
 
 void Shell::launchJob(Job *j, int foreground){
+    //addJob(j);
     Process *p = j->firstProcess;
     pid_t pid;
     int outfile;
@@ -436,4 +438,27 @@ bool Shell::dirChecker(char dir[]) {
 	return false;
 }
 
+void Shell::showJobs() {
+    Job *job = firstJob;
 
+    while(job != NULL) {
+
+        cout << job->pgid << "\n";
+        job = job->nextJob;
+    }
+}
+
+void Shell::addJob(Job *j) {
+    if (firstJob = NULL) {
+        firstJob = j;
+    }
+    else {
+        Job *jobTemp = firstJob;
+
+        while(jobTemp->nextJob != NULL) {
+            jobTemp = jobTemp->nextJob;
+        }
+
+        jobTemp->nextJob = jobTemp;
+    }
+}

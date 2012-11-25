@@ -56,6 +56,8 @@ private:
     void waitForJob(Job *j);
     int jobIsStopped(Job *j);
     int jobIsCompleted(Job *j);
+    void addJob(Job *j);
+    void showJobs();
 
     void writeToFile(string fileName, list<string> l);
     void readFile(string fileName);

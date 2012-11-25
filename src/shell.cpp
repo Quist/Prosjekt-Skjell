@@ -81,6 +81,7 @@ void Shell::orderLoop() {
         cout << "SHELL-MOFO - >>> ";
         getline(cin, userInput);
         if((userInput.compare(0, 4, "exit") == 0)) {
+            userInput = "";
             exit(0);
         }
         handleUserInput(userInput);
@@ -149,26 +150,58 @@ void Shell::launchJob(Job *j, int foreground){
     pid_t pid;
     int outfile;
     int infile = j->stdin;
-    
-    pid = fork();
-    
-     //Child:
-    if(pid == 0){      
-        launchProcess(p, j->pgid,0,0,0, foreground);
-    } else if (pid < 0) {
-        perror("fork");
-        exit(1);
-    } else { //parent:
-        p->pid = pid;
-        if(interactive){
-            
-            //Sets the jobs process group id to the first process pid.
-            if(!j->pgid){
-                j->pgid = pid;
-                setpgid (pid, j->pgid);
-            }            
-        }        
-    }
+    int mypipe[2];
+
+    do {
+        
+        /*setting up pipes*/
+        if (p->next != NULL) {
+
+            if (pipe(mypipe) < 0) {
+                perror ("pipe");
+                exit(1);
+            }
+            outfile = mypipe[1];
+        }
+        else {
+            outfile = j->stdout;
+        }
+
+        /* forking the child process */
+        pid = fork();
+
+        //Child:
+        if(pid == 0){      
+            launchProcess(p, j->pgid, infile, outfile, j->stderr, foreground);
+        } 
+        else if (pid < 0) {
+            perror("fork");
+            exit(1);
+        } 
+        else { //only for the parent process
+            p->pid = pid;
+            if(interactive){
+
+                //Sets the jobs process group id to the first process pid.
+                if(!j->pgid){
+                    j->pgid = pid;
+                    setpgid (pid, j->pgid);
+                }            
+            }        
+        }
+
+        //closing the file if piping is done
+        if (infile != j-> stdin) {
+            close(infile);
+        }
+        if (outfile != j->stdout) {
+            close(outfile);
+        }
+
+        infile = mypipe[0];
+
+    } while((p = p->next) != NULL);
+
 
     if(!interactive){
        waitForJob(j); 

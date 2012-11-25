@@ -6,6 +6,7 @@ using namespace std;
 
 Process::Process(char **args){
     this->args = args;
+    this->next = NULL;
 }
 
 int Process::markProcessStatus(pid_t pid, int status) {

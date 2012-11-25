@@ -17,6 +17,7 @@
 class Process {
 public:
     Process(char **args);
+    Process *next;
     int markProcessStatus(pid_t pid, int status);
 
     char **args; //Arguments to process

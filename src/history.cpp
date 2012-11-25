@@ -7,6 +7,7 @@ History::History() {
    maxHistoryCommand = 0;
    
    maxHistoryExitStat = 0;
+
 }
 
 void History::addCommand(string newCommand) {
@@ -58,4 +59,27 @@ string History::getExitStat(int i) {
          return exitStat[i];
       }
    }
+}
+
+void History::saveVariable(string input) {
+	size_t found;
+	string key;
+	string path;
+
+	found = input.find("=");
+	key = input.substr(0, found);
+	path = input.substr(found + 1, input.length());
+
+	//if(dirChecker(path)) {
+	//	variables.insert(pair<string,string>(key,path));
+	//}
+}
+
+char* History::getVariable(string input) {
+	string tmp;
+
+	it = variables.find(input);
+	tmp = it->second;
+	char *output = (char*)tmp.c_str();
+	return output;
 }

@@ -80,6 +80,9 @@ void Shell::orderLoop() {
     while (true) {
         cout << "SHELL-MOFO - >>> ";
         getline(cin, userInput);
+        if((userInput.compare(0, 4, "exit") == 0)) {
+            exit(0);
+        }
         handleUserInput(userInput);
     }
 }
@@ -90,7 +93,7 @@ void Shell::handleUserInput(string userInput) {
     } else {
         const char* cmd = userInput.c_str();
        // startProcess(cmd);
-        test(userInput);
+        testJob(userInput);
     }  
 }
 
@@ -109,11 +112,37 @@ void Shell::test(string cmd) {
         i++;
         token = strtok(NULL, " ");
     }
+    tokens[i] = NULL;
     
 
     Process *p = new Process(&*tokens);
     launchProcess(p, 0, 0,0,0,1 );
 }
+
+void Shell::testJob(string cmd) {
+    char *cString;
+    char *tokens[10];
+    
+    cString = new char [cmd.size() + 1];
+    strcpy(cString, cmd.c_str());
+    char *token = strtok(cString, " ");
+
+    int i = 0;
+    while (token != NULL) {
+        tokens[i] = token;
+        i++;
+        token = strtok(NULL, " ");
+    }
+    tokens[i] = NULL;
+    
+
+    Process *p = new Process(&*tokens);
+
+    Job *j = new Job(p);
+
+    launchJob(j, 0);
+}
+    
 
 void Shell::launchJob(Job *j, int foreground){
     Process *p = j->firstProcess;

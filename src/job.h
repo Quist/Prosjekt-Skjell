@@ -16,8 +16,11 @@ using namespace std;
  */
 class Job {
 public:
-    Job();
-    int stdin, stdout, stderr; /* standard i/o channels */
+    Job(Process *p);
+    int stdin;
+    int stdout;
+    int stderr; /* standard i/o channels */
+
     Process *firstProcess;
     Job *nextJob;
     pid_t pgid;

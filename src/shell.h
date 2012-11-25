@@ -38,6 +38,7 @@ private:
     char currentPath[1024];
 
     void test(string cmd);
+    void testJob(string cmd);
     
     void initShell();
     void setStartPath();

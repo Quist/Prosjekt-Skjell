@@ -36,6 +36,7 @@ private:
     Job *firstJob;
     
     char currentPath[1024];
+	char currentData[1024];
 
     void test(string cmd);
     void testJob(string cmd);
@@ -58,6 +59,7 @@ private:
 
     void writeToFile(string fileName, list<string> l);
     void readFile(string fileName);
+	bool dirChecker(char dir[]);
 
 
     //Shell commands:

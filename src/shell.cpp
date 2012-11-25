@@ -5,16 +5,16 @@
 using namespace std;
 
 int main() {
-    Shell shell;
-    shell.orderLoop();
-    return 0;
+	Shell shell;
+	shell.orderLoop();
+	return 0;
 }
 
 Shell::Shell() {
-    initShell();
-    setStartPath();
-    cmdSetPath = "PATH=";
-    cmdSetDataPath = "DATA=";
+	initShell();
+	setStartPath();
+	cmdSetPath = "PATH=";
+	cmdSetDataPath = "DATA=";
 }
 
 /*
@@ -24,45 +24,94 @@ Shell::Shell() {
  *  
  */
 void Shell::initShell(){
-    foregroundTerminal = STDIN_FILENO; 
-    interactive = isatty(foregroundTerminal); // Checks if refering to terminal
-    
-    if(interactive){
-        //Waits until the shell becomes active.
-        shellPGID = getpgrp();
-        while (tcgetpgrp(foregroundTerminal) != shellPGID){
-            kill(-shellPGID, SIGTTIN);            
-            shellPGID = getpgrp();
-        }
-        
-       //Ignores interactive and job signals:
-        signal(SIGINT, SIG_IGN);
-        signal(SIGQUIT, SIG_IGN);
-        signal(SIGTSTP, SIG_IGN);
-        signal(SIGTTIN, SIG_IGN);
-        signal(SIGTTOU, SIG_IGN);
-        signal(SIGCHLD, SIG_IGN);
+	foregroundTerminal = STDIN_FILENO; 
+	interactive = isatty(foregroundTerminal); // Checks if refering to terminal
 
-        //Put our shell in its own process group
-        shellPGID = getpid();
-        if(setpgid (shellPGID, shellPGID) < 0){
-            cout << "ERROR: Could not put the shell in it's own process group";
-            exit(1);
-        }
-        
-        //Grabs controll of the terminal. We are now the foreground terminal.
-        tcsetpgrp(foregroundTerminal, shellPGID);
-        
-        /* Save default terminal attributes for shell.  */
-        tcgetattr (foregroundTerminal, &shellMode);
-        
-    }
+	if(interactive){
+		//Waits until the shell becomes active.
+		shellPGID = getpgrp();
+		while (tcgetpgrp(foregroundTerminal) != shellPGID){
+			kill(-shellPGID, SIGTTIN);            
+			shellPGID = getpgrp();
+		}
+
+		//Ignores interactive and job signals:
+		signal(SIGINT, SIG_IGN);
+		signal(SIGQUIT, SIG_IGN);
+		signal(SIGTSTP, SIG_IGN);
+		signal(SIGTTIN, SIG_IGN);
+		signal(SIGTTOU, SIG_IGN);
+		signal(SIGCHLD, SIG_IGN);
+
+		//Put our shell in its own process group
+		shellPGID = getpid();
+		if(setpgid (shellPGID, shellPGID) < 0){
+			cout << "ERROR: Could not put the shell in it's own process group";
+			exit(1);
+		}
+
+		//Grabs controll of the terminal. We are now the foreground terminal.
+		tcsetpgrp(foregroundTerminal, shellPGID);
+
+		/* Save default terminal attributes for shell.  */
+		tcgetattr (foregroundTerminal, &shellMode);
+
+	}
 
 }
 
 void Shell::setStartPath() {
-    char *currentPathPtr = currentPath;
-    getcwd(currentPathPtr, 1024);
+	char *currentPathPtr = currentPath;
+	char *currentDataPtr = currentData;
+	string cmd, data, path, tmp;
+	size_t found, found2;
+	struct stat st, st2;
+	char newData[1024];
+	char newPath[1024];
+	char dataP1[1024];
+	char dataP2[1024];
+	char pathP1[1024];
+	char pathP2[1024];
+	ifstream inFile;
+	inFile.open(".sh142");
+	if(inFile.is_open()) {
+		while(!inFile.eof()) {
+			getline(inFile, cmd);
+
+			found = cmd.find("DATA=");
+			if(found != string::npos) {
+				data = cmd;
+			}
+
+			found = cmd.find("PATH=");
+			if(found != string::npos) {
+				path = cmd;
+			}
+		}
+		
+		found = path.find("PATH=");
+		tmp = path.substr(found + 6, path.length());
+		strcpy(currentPath, tmp.c_str());
+		found2 = path.find(":");
+		found = path.copy(pathP1, found2 - 5, found + 5);
+		found = path.copy(pathP2, path.length(), found2 + 1);
+		if(!dirChecker(pathP1) || !dirChecker(pathP2)) {
+			getcwd(currentPathPtr, 1024);
+		}	
+		
+		found = data.find("DATA=");
+		tmp = data.substr(found + 6, data.length());
+		strcpy(currentData, tmp.c_str());
+		found2 = data.find(":");
+		found = data.copy(dataP1, found2 - 5, found + 5);
+		found = data.copy(dataP2, data.length(), found2 + 1);
+		if(!dirChecker(dataP1) || !dirChecker(dataP2)) {
+			getcwd(currentDataPtr, 1024);
+		}
+	} else {
+		getcwd(currentPathPtr, 1024);
+		getcwd(currentDataPtr, 1024);
+	}
 }
 
 void Shell::updateCurrentPath(char newPath[]) {
@@ -75,75 +124,74 @@ void Shell::updateCurrentPath(char newPath[]) {
 }
 
 void Shell::orderLoop() {
-    string userInput;
+	string userInput;
 
-    while (true) {
-        cout << "SHELL-MOFO - >>> ";
-        getline(cin, userInput);
-        if((userInput.compare(0, 4, "exit") == 0)) {
-            userInput = "";
-            exit(0);
-        }
-        handleUserInput(userInput);
-    }
+	while (true) {
+		cout << "SHELL-MOFO - >>> ";
+		getline(cin, userInput);
+		if((userInput.compare(0, 4, "exit") == 0)) {
+			exit(0);
+		}
+		handleUserInput(userInput);
+	}
 }
 
 void Shell::handleUserInput(string userInput) {
-    if (userInput.compare(0, cmdSetDataPath.length(), cmdSetDataPath) == 0) {
-        cout << "SUCCESS!\n";
-    } else {
-        const char* cmd = userInput.c_str();
-       // startProcess(cmd);
-        testJob(userInput);
-    }  
+	if (userInput.compare(0, cmdSetDataPath.length(), cmdSetDataPath) == 0) {
+		cout << "SUCCESS!\n";
+	} else {
+		const char* cmd = userInput.c_str();
+		// startProcess(cmd);
+		testJob(userInput);
+	}  
 }
 
 void Shell::test(string cmd) {
 
-    char *cString;
-    char *tokens[10];
-    
-    cString = new char [cmd.size() + 1];
-    strcpy(cString, cmd.c_str());
-    char *token = strtok(cString, " ");
+	char *cString;
+	char *tokens[10];
 
-    int i = 0;
-    while (token != NULL) {
-        tokens[i] = token;
-        i++;
-        token = strtok(NULL, " ");
-    }
-    tokens[i] = NULL;
-    
+	cString = new char [cmd.size() + 1];
+	strcpy(cString, cmd.c_str());
+	char *token = strtok(cString, " ");
 
-    Process *p = new Process(&*tokens);
-    launchProcess(p, 0, 0,0,0,1 );
+	int i = 0;
+	while (token != NULL) {
+		tokens[i] = token;
+		i++;
+		token = strtok(NULL, " ");
+	}
+	tokens[i] = NULL;
+
+
+	Process *p = new Process(&*tokens);
+	launchProcess(p, 0, 0,0,0,1 );
 }
 
 void Shell::testJob(string cmd) {
-    char *cString;
-    char *tokens[10];
-    
-    cString = new char [cmd.size() + 1];
-    strcpy(cString, cmd.c_str());
-    char *token = strtok(cString, " ");
+	char *cString;
+	char *tokens[10];
 
-    int i = 0;
-    while (token != NULL) {
-        tokens[i] = token;
-        i++;
-        token = strtok(NULL, " ");
-    }
-    tokens[i] = NULL;
-    
+	cString = new char [cmd.size() + 1];
+	strcpy(cString, cmd.c_str());
+	char *token = strtok(cString, " ");
 
-    Process *p = new Process(&*tokens);
+	int i = 0;
+	while (token != NULL) {
+		tokens[i] = token;
+		i++;
+		token = strtok(NULL, " ");
+	}
+	tokens[i] = NULL;
 
-    Job *j = new Job(p);
 
-    launchJob(j, 0);
+	Process *p = new Process(&*tokens);
+
+	Job *j = new Job(p);
+
+	launchJob(j, 0);
 }
-    
+
 
 void Shell::launchJob(Job *j, int foreground){
     Process *p = j->firstProcess;
@@ -215,169 +263,177 @@ void Shell::launchJob(Job *j, int foreground){
 }
 
 void Shell::putJobInForeground(Job *j, int cont) {
-    //Gives the terminal to the job:
-    tcsetpgrp(foregroundTerminal, j->pgid);
+	//Gives the terminal to the job:
+	tcsetpgrp(foregroundTerminal, j->pgid);
 
-    //Sends continue signal to the job:
-    if (cont) {
-        tcsetattr(foregroundTerminal,TCSADRAIN, &j->tmodes);
-        if (kill(-j->pgid, SIGCONT) < 0)
-            perror("kill (SIGCONT)");
-    }
-    
-    waitForJob(j);
+	//Sends continue signal to the job:
+	if (cont) {
+		tcsetattr(foregroundTerminal,TCSADRAIN, &j->tmodes);
+		if (kill(-j->pgid, SIGCONT) < 0)
+			perror("kill (SIGCONT)");
+	}
 
-    //Put the shell back in the foreground.
-    tcsetpgrp(foregroundTerminal, shellPGID);
+	waitForJob(j);
 
-    // Restore the shell's terminal modes.
-    tcgetattr(foregroundTerminal, &j->tmodes);
-    tcsetattr(foregroundTerminal, TCSADRAIN, &shellMode);
+	//Put the shell back in the foreground.
+	tcsetpgrp(foregroundTerminal, shellPGID);
+
+	// Restore the shell's terminal modes.
+	tcgetattr(foregroundTerminal, &j->tmodes);
+	tcsetattr(foregroundTerminal, TCSADRAIN, &shellMode);
 
 }
 
 void Shell::putJobInBackground(Job *j, int cont) {
-    // Send the job a continue signal:
-    if (cont) {
-        if (kill(-j->pgid, SIGCONT) < 0) {
-            perror("kill (SIGCONT)");
-        }
-    }
+	// Send the job a continue signal:
+	if (cont) {
+		if (kill(-j->pgid, SIGCONT) < 0) {
+			perror("kill (SIGCONT)");
+		}
+	}
 }
 
 int Shell::markProcessStatus(pid_t pid, int status){
-    Job *j;
-    Process *p;
-    
-    if(pid > 0){
-         for(j = firstJob; j; j = j->nextJob){
-             for(p = j->firstProcess; p; p= p->nextProcess){
-                 /*Maybe change so only the process with the right pid is called.
-                  * The check is now done in the process method.
-                 */
-                 return p->markProcessStatus(pid, status);
-             }
-         }
-    } else if(pid == 0 /*||errno == ECHILD*/){
-        //No processes to update
-        return -1;
-    } else {
-        //Error handler:
-        perror("waitpid");
-        return -1;
-    }
+	Job *j;
+	Process *p;
+
+	if(pid > 0){
+		for(j = firstJob; j; j = j->nextJob){
+			for(p = j->firstProcess; p; p= p->nextProcess){
+				/*Maybe change so only the process with the right pid is called.
+				 * The check is now done in the process method.
+				 */
+				return p->markProcessStatus(pid, status);
+			}
+		}
+	} else if(pid == 0 /*||errno == ECHILD*/){
+		//No processes to update
+		return -1;
+	} else {
+		//Error handler:
+		perror("waitpid");
+		return -1;
+	}
 }
 
 void Shell::waitForJob(Job *j) {
-    int status;
-    pid_t pid;
+	int status;
+	pid_t pid;
 
-    do {
-        pid = waitpid(WAIT_ANY, &status, WUNTRACED);
-    } while (!markProcessStatus(pid, status)
-            && !jobIsStopped(j)
-            && !jobIsCompleted(j));
+	do {
+		pid = waitpid(WAIT_ANY, &status, WUNTRACED);
+	} while (!markProcessStatus(pid, status)
+			&& !jobIsStopped(j)
+			&& !jobIsCompleted(j));
 }
 
 //Return true if all processes in the job have stopped or completed. 
 int Shell::jobIsStopped(Job *j) {
-    Process *p;
-    for (p = j->firstProcess; p; p = p->nextProcess)
-        if (!p->completed && !p->stopped)
-            return 0;
-    return 1;
+	Process *p;
+	for (p = j->firstProcess; p; p = p->nextProcess)
+		if (!p->completed && !p->stopped)
+			return 0;
+	return 1;
 }
 
 //Return true if all processes in the job have completed.
 int Shell::jobIsCompleted(Job *j) {
-    Process *p;
+	Process *p;
 
-    for (p = j->firstProcess; p; p = p->nextProcess)
-        if (!p->completed)
-            return 0;
-    return 1;
+	for (p = j->firstProcess; p; p = p->nextProcess)
+		if (!p->completed)
+			return 0;
+	return 1;
 }
 
 
 void Shell::launchProcess(Process *p, pid_t pgid, int infile, int outfile,
-        int errfile, int foreground){
-    
-    pid_t pid;
-    
-    if(interactive){
-        pid = getpid();
-        if(pgid == 0){
-            pgid = pid;
-        }
-        setpgid(pid, pgid);
-        
-        if(foreground){
-            tcsetpgrp(foregroundTerminal, pgid);
-        }
-        
-        /* Since the process forked of the terminal and the terminal ignores
-         * signals -> We have to set signal handling back to default for the 
-         * process         
-         */
-        signal(SIGINT, SIG_DFL);
-        signal(SIGQUIT, SIG_DFL);
-        signal(SIGTSTP, SIG_DFL);
-        signal(SIGTTIN, SIG_DFL);
-        signal(SIGTTOU, SIG_DFL);
-        signal(SIGCHLD, SIG_DFL);
-    }
-    
-    
-    /* Sets file descriptor. Pointer to the details of open files in kernel.
-     * Sets the standard input/output channel 
-     */
-    if (infile != STDIN_FILENO) {
-        dup2(infile, STDIN_FILENO);
-        close(infile);
-    }
-    if (outfile != STDOUT_FILENO) {
-        dup2(outfile, STDOUT_FILENO);
-        close(outfile);
-    }
-    if (errfile != STDERR_FILENO) {
-        dup2(errfile, STDERR_FILENO);
-        close(errfile);
-    }
-    
-    //Executes the new process and exits after the execution.
-    execvp(p->args[0], p->args);
-    perror("execvp");
-    exit(1);
+		int errfile, int foreground){
+
+	pid_t pid;
+
+	if(interactive){
+		pid = getpid();
+		if(pgid == 0){
+			pgid = pid;
+		}
+		setpgid(pid, pgid);
+
+		if(foreground){
+			tcsetpgrp(foregroundTerminal, pgid);
+		}
+
+		/* Since the process forked of the terminal and the terminal ignores
+		 * signals -> We have to set signal handling back to default for the 
+		 * process         
+		 */
+		signal(SIGINT, SIG_DFL);
+		signal(SIGQUIT, SIG_DFL);
+		signal(SIGTSTP, SIG_DFL);
+		signal(SIGTTIN, SIG_DFL);
+		signal(SIGTTOU, SIG_DFL);
+		signal(SIGCHLD, SIG_DFL);
+	}
+
+
+	/* Sets file descriptor. Pointer to the details of open files in kernel.
+	 * Sets the standard input/output channel 
+	 */
+	if (infile != STDIN_FILENO) {
+		dup2(infile, STDIN_FILENO);
+		close(infile);
+	}
+	if (outfile != STDOUT_FILENO) {
+		dup2(outfile, STDOUT_FILENO);
+		close(outfile);
+	}
+	if (errfile != STDERR_FILENO) {
+		dup2(errfile, STDERR_FILENO);
+		close(errfile);
+	}
+
+	//Executes the new process and exits after the execution.
+	execvp(p->args[0], p->args);
+	perror("execvp");
+	exit(1);
 
 }
 
 
 void Shell::readFile(string fileName) {
-    string cmd;
-    ifstream inFile;
-    inFile.open(fileName.c_str());
+	string cmd;
+	ifstream inFile;
+	inFile.open(fileName.c_str());
 
-    if (inFile.is_open()) {
-        while (!inFile.eof()) {
-            getline(inFile, cmd);
-            handleUserInput(cmd);
-        }
-    } else {
-        cout << "Cant find " + fileName + "\n";
-    }
-    inFile.close();
+	if (inFile.is_open()) {
+		while (!inFile.eof()) {
+			getline(inFile, cmd);
+			handleUserInput(cmd);
+		}
+	} else {
+		cout << "Cant find " + fileName + "\n";
+	}
+	inFile.close();
 }
 
 void Shell::writeToFile(string fileName, list<string> l) {
-    string tmp;
-    ofstream toFile;
-    toFile.open(fileName.c_str(), ios::app);
-    while (!l.empty()) {
-        tmp = l.front();
-        l.pop_front();
-        toFile << tmp << endl;
-    }
-    toFile.close();
+	string tmp;
+	ofstream toFile;
+	toFile.open(fileName.c_str(), ios::app);
+	while (!l.empty()) {
+		tmp = l.front();
+		l.pop_front();
+		toFile << tmp << endl;
+	}
+	toFile.close();
+}
+
+bool Shell::dirChecker(char dir[]) {
+	struct stat st;
+	if(stat(dir, &st) == 0 && (((st.st_mode) & S_IFMT) == S_IFDIR)) {
+		return true;
+	}
+	return false;
 }
 
 

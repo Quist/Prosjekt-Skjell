@@ -105,7 +105,7 @@ void Shell::setStartPath() {
 		found2 = data.find(":");
 		found = data.copy(dataP1, found2 - 5, found + 5);
 		found = data.copy(dataP2, data.length(), found2 + 1);
-		if(!dirChecker(dataP1) && !dirChecker(dataP2)) {
+		if(!dirChecker(dataP1) || !dirChecker(dataP2)) {
 			getcwd(currentDataPtr, 1024);
 		}
 	} else {

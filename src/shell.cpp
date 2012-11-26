@@ -1,7 +1,7 @@
 
 #include "shell.h"
 
-
+#include <stdio.h>
 using namespace std;
 
 int main() {
@@ -11,6 +11,7 @@ int main() {
 }
 
 Shell::Shell() {
+    History his;
 	initShell();
 	setStartPath();
 	cmdSetPath = "PATH=";
@@ -138,13 +139,13 @@ void Shell::orderLoop() {
 }
 
 void Shell::handleUserInput(string userInput) {
-	if (userInput.compare(0, cmdSetDataPath.length(), cmdSetDataPath) == 0) {
-		cout << "SUCCESS!\n";
-	} else {
-		const char* cmd = userInput.c_str();
-		// startProcess(cmd);
-		testJob(userInput);
-	}  
+    if (userInput.compare(0, cmdSetDataPath.length(), cmdSetDataPath) == 0) {
+        cout << "SUCCESS!\n";
+    } else {
+        const char* cmd = userInput.c_str();
+        // startProcess(cmd);
+        testJob(userInput);
+    }  
 }
 
 void Shell::test(string cmd) {

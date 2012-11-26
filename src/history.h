@@ -1,5 +1,7 @@
 #include <string>
-
+#include <map>
+#include <sys/stat.h>
+#include <string.h>
 
 class History{
 
@@ -9,6 +11,8 @@ private:
    int lastGetCommand;
    int maxHistoryCommand;
    int maxHistoryExitStat;
+   map<string, string> variables;
+   map<string, string>::iterator it;
 
 public:
    History();
@@ -19,5 +23,7 @@ public:
 
    string getExitStat(int i);
    void addExitStat(string newExitStat);
+   void saveVariable(string input);
+   char *getVariable(string input);
 
 };

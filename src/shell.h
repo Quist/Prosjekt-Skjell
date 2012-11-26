@@ -27,7 +27,7 @@ public:
     Shell();
 
 private:
-
+    History his;
     pid_t shellPGID;
     struct termios shellMode;
     int foregroundTerminal;

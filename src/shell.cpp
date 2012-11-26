@@ -139,13 +139,84 @@ void Shell::orderLoop() {
 }
 
 void Shell::handleUserInput(string userInput) {
-    if (userInput.compare(0, cmdSetDataPath.length(), cmdSetDataPath) == 0) {
-        cout << "SUCCESS!\n";
-    } else {
-        const char* cmd = userInput.c_str();
-        // startProcess(cmd);
-        testJob(userInput);
-    }  
+
+	//copying string to charArray
+	char *input = new char[userInput.size() + 1];
+	input[userInput.size()] = 0;
+	memcpy(input, userInput.c_str(), userInput.size());
+
+	//local variables
+	size_t pos;
+	string tmp;
+
+
+
+	if (userInput.compare(0, cmdSetDataPath.length(), cmdSetDataPath) == 0) {
+		cout << "SUCCESS!\n";
+	} else {
+		const char* cmd = userInput.c_str();
+		// startProcess(cmd);
+		testJob(userInput);
+	}  
+
+	if(userInput.substr(0,5) == "PATH="){
+		//set a persistent executable path
+
+		//TODO make this method, taking a string
+		//representing the executable path
+		cout << "use this method : setNewPath(userInput.substr(5, userInput.length()));" << endl;
+
+	}else if(userInput.substr(0,5) == "DATA="){
+		//set a persistet data file path
+		//TODO make this method, taking a string, representing
+		//the path to the data file
+		cout << "use this method: setNewDataPath(userInput.substr(5, userInput.length()));" << endl;
+
+	}else if(strncmp (input, "$?x", 2) == 0){
+		//check exit status for the command# after $?
+		int cmd = input[3];
+		if(cmd > 47 && cmd < 58){
+			cmd = cmd - 48;
+			cout << "use this method: his.getExitStat(cmd);" << endl;
+		}else{
+			cout << "Could not find command#: " << input[3] << endl; 
+		}
+
+	}else if(userInput.substr(0, 7) == "CPUMAX="){
+		//sets maximum CPU utilization
+		pos = userInput.find("=");
+		tmp = userInput.substr(pos);
+		tmp = tmp.substr(1, tmp.length());
+
+		pos = tmp.find(":");
+		int percentage = atoi(tmp.substr(0, (int) pos).c_str());
+		int seconds = atoi(tmp.substr((int) pos + 1, tmp.length()).c_str());
+
+		cout << "use this method: restrictCPU(seconds, percentage);" << endl;
+
+	}else if(userInput.substr(0,7) == "MEMMAX="){
+		//Assuming you can only set megabytes restriction
+		pos = userInput.find("=");
+		tmp = userInput.substr(pos);
+		tmp = tmp.substr(1, tmp.length());
+
+		pos = tmp.find(":");
+		int megaBytes = atoi ( tmp.substr(0, (int) pos -1).c_str()); 
+		int seconds = atoi ( tmp.substr((int) pos + 1, tmp.length()).c_str());
+
+		cout << "use this method: restrictMEM(megaBytes, seconds)" << endl;
+
+	}else if(userInput.substr(0, 8) == "TIMEMAX="){
+		//restricts running time of program
+		pos = userInput.find("=");
+		tmp = userInput.substr(pos);
+		tmp = tmp.substr(1, tmp.length());
+
+		int seconds = atoi(tmp.c_str());
+
+		cout << "use this method to restrict running time for a prog: restrictRunningTime(seconds)" << endl;
+	}
+
 }
 
 void Shell::test(string cmd) {

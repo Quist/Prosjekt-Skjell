@@ -58,9 +58,7 @@ void Shell::initShell(){
 
 		/* Save default terminal attributes for shell.  */
 		tcgetattr (foregroundTerminal, &shellMode);
-
 	}
-
 }
 
 void Shell::setStartPath() {
@@ -434,7 +432,6 @@ void Shell::putJobInForeground(Job *j, int cont) {
 	}
 
 	waitForJob(j);
-        removeJob();
         
 	//Put the shell back in the foreground.
 	tcsetpgrp(foregroundTerminal, shellPGID);
@@ -620,6 +617,27 @@ void Shell::addJob(Job *j) {
     }
 }
 
-void Shell::killJob(){
-    
+void Shell::bringJobToForeground(int pgid){
+    Job *j = findJob(pgid);
+    if(j){
+        putJobInForeground(j, 1);
+    }
+}
+
+Job* Shell::findJob(int pgid){
+    Job *j;
+    for(j = firstJob; j; j = j->nextJob){
+        if(j->pgid == pgid ){
+            return j;
+        }
+    }
+    return NULL;
+}
+
+void Shell::killJob(int pgid) {
+    Job *j = findJob(pgid);
+    if (j == NULL) {
+        return;
+    }
+    kill(j->pgid, SIGKILL);
 }

@@ -62,6 +62,9 @@ private:
     void addJob(Job *j);
     void showJobs();
     void killJob();
+    void bringJobToForeground(int pid);
+    Job* findJob(int pgid);
+    void killJob(int pgid);
 
     void writeToFile(string fileName, list<string> l);
     void readFile(string fileName);

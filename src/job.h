@@ -7,12 +7,12 @@ using namespace std;
 #include <cstdlib>
 #include <unistd.h>
 #include <termios.h>
+#include <ctime>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <stdio.h>
-
 
 //Program includes:
 #include "process.h"
@@ -26,12 +26,13 @@ public:
     int stdin;
     int stdout;
     int stderr; /* standard i/o channels */
-
+    
     Process *firstProcess;
     Job *nextJob;
     pid_t pgid;
     struct termios tmodes;      /* saved terminal modes */
-
+    time_t timeCreated;
+    
     int outPutFile(const char* filename);
     
     

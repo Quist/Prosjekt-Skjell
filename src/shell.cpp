@@ -152,7 +152,7 @@ void Shell::checkCommand(string userInput){
 
 	posAmp = userInput.find("&&");
 	posOr = userInput.find("||");
-	forLoop = userInput.find("for(");
+	forLoop = userInput.find("For(");
 	variable = userInput.find("$");
 	redirLess = userInput.find("<");
 	redirBigger = userInput.find(">");
@@ -177,6 +177,16 @@ void Shell::checkCommand(string userInput){
 	}else if(posOr != string::npos){
 
 	}else if(forLoop != string::npos){
+		
+		size_t pos = userInput.find("(");
+
+		string tmp = userInput.substr(pos);
+
+		pos = tmp.find(")");
+
+		tmp = tmp.substr(0, (int) pos);
+
+
 
 	}else{
 
@@ -184,7 +194,6 @@ void Shell::checkCommand(string userInput){
 
 	}
 }
-
 
 
 
@@ -302,6 +311,12 @@ void Shell::handleUserInput(string userInput) {
 	}else if(userInput.compare(0, userInput.length(), "listjobs") == 0){
 		showJobs();
 
+	}else if(userInput.length() > 3 && userInput.substr(0,2) == "fg"){
+		string tmp = userInput.substr(3, userInput.length());
+		int jobNum = atoi (tmp.c_str());
+		bringJobToForeground(jobNum);
+
+		//TODO new command: fg tall, vil bare ha int'en i method: bringJobToForeground(int i);
 	}else{
 		//Could not find the command you specified
 

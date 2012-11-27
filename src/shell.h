@@ -40,6 +40,7 @@ private:
 
     void test(string cmd);
     void testJob(string cmd);
+    void testPiping();
     
     void initShell();
     void setStartPath();

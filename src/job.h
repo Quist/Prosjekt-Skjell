@@ -7,6 +7,12 @@ using namespace std;
 #include <cstdlib>
 #include <unistd.h>
 #include <termios.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/wait.h>
+#include <stdio.h>
+
 
 //Program includes:
 #include "process.h"
@@ -25,6 +31,8 @@ public:
     Job *nextJob;
     pid_t pgid;
     struct termios tmodes;      /* saved terminal modes */
+
+    int outPutFile(const char* filename);
     
     
 private:    

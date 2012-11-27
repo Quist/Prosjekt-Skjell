@@ -11,7 +11,7 @@ int main() {
 }
 
 Shell::Shell() {
-    History his;
+        History his;
 	initShell();
 	setStartPath();
 	cmdSetPath = "PATH=";
@@ -134,16 +134,19 @@ void Shell::orderLoop() {
 		if((userInput.compare(0, 4, "exit") == 0)) {
 			exit(0);
 		}
-		checkCommand(userInput, false);
+		checkCommand(userInput);
 		//handleUserInput(userInput);
 	}
 }
 
-void Shell::checkCommand(string userInput, int background){
+void Shell::checkCommand(string userInput){
 	size_t posAmp;
 	size_t posOr;
 	size_t forLoop;
 	size_t variable;
+	size_t redirLess;
+	size_t redirBigger;
+	size_t redirLessTwo;
 
 	string tmp = "";
 
@@ -152,11 +155,12 @@ void Shell::checkCommand(string userInput, int background){
 	forLoop = userInput.find("for(");
 	variable = userInput.find("$");
 
+
 	if(userInput.compare(userInput.length()-1, 1, "&") == 0){
 		//check this commmand but this time with only the commands before
 		//the '&'
 		//TODO make sure this command runs in background!
-		checkCommand(userInput.substr(userInput.length()-1, userInput.length()), 1);
+		prepareJob(userInput.substr(0, userInput.length()-1), 0);
 		cout << "This process will be run in background" << endl;
 	}else if(posAmp != string::npos){
 		
@@ -168,6 +172,8 @@ void Shell::checkCommand(string userInput, int background){
 	}else if(forLoop != string::npos){
 
 	}else{
+
+		handleUserInput(userInput);
 
 	}
 }
@@ -187,7 +193,7 @@ void Shell::handleUserInput(string userInput) {
 	size_t pos;
 	string tmp;
 
-
+/*
 	if (userInput.compare(0, cmdSetDataPath.length(), cmdSetDataPath) == 0) {
 		cout << "SUCCESS!\n";
 	} else {
@@ -195,15 +201,16 @@ void Shell::handleUserInput(string userInput) {
 		//startProcess(cmd);
 		testJob(cmd);
 	}  
+	*/
 
-	if(userInput.substr(0,5) == "PATH="){
+	if(userInput.substr(0,5) == cmdSetPath){
 		//set a persistent executable path
 
 		//TODO make this method, taking a string
 		//representing the executable path
 		cout << "use this method : setNewPath(userInput.substr(5, userInput.length()));" << endl;
 
-	}else if(userInput.substr(0,5) == "DATA="){
+	}else if(userInput.substr(0,5) == cmdSetDataPath){
 		//set a persistet data file path
 		//TODO make this method, taking a string, representing
 		//the path to the data file
@@ -276,12 +283,15 @@ void Shell::handleUserInput(string userInput) {
 
 			cout << "saved variable: " << userInput.substr(0, userInput.find("=")) << endl;
 
-	}else if(userInput.find("$") != string::npos){
-			//replace
+	}else if(userInput.compare(0, userInput.length(), "listjobs") == 0){
+			showJobs();
+	
+	}else{
+			//Could not find the command you specified
+			prepareJob(userInput, 1);
+
+			cout << "Preparing job..." << endl;
 			
-			pos = userInput.find("$"); 
-
-
 	}
 
 }
@@ -406,6 +416,7 @@ void Shell::launchJob(Job *j, int foreground){
 void Shell::putJobInForeground(Job *j, int cont) {
 	//Gives the terminal to the job:
 	tcsetpgrp(foregroundTerminal, j->pgid);
+       
 
 	//Sends continue signal to the job:
 	if (cont) {
@@ -415,7 +426,7 @@ void Shell::putJobInForeground(Job *j, int cont) {
 	}
 
 	waitForJob(j);
-
+        
 	//Put the shell back in the foreground.
 	tcsetpgrp(foregroundTerminal, shellPGID);
 
@@ -463,6 +474,7 @@ void Shell::waitForJob(Job *j) {
 
 	do {
 		pid = waitpid(WAIT_ANY, &status, WUNTRACED);
+                his.addExitStat(status);
 	} while (!markProcessStatus(pid, status)
 			&& !jobIsStopped(j)
 			&& !jobIsCompleted(j));

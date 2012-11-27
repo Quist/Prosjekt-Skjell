@@ -154,6 +154,9 @@ void Shell::checkCommand(string userInput){
 	posOr = userInput.find("||");
 	forLoop = userInput.find("for(");
 	variable = userInput.find("$");
+	redirLess = userInput.find("<");
+	redirBigger = userInput.find(">");
+	redirLessTwo = userInput.find("2>");
 
 
 	if(userInput.compare(userInput.length()-1, 1, "&") == 0){
@@ -166,7 +169,9 @@ void Shell::checkCommand(string userInput){
 		
 		string cmd = userInput.substr(0, posAmp); 
 		commands.push_front(cmd);
-		
+		cmd = userInput.substr(posAmp);
+		commands.push_front(cmd);
+
 	}else if(posOr != string::npos){
 
 	}else if(forLoop != string::npos){
@@ -268,7 +273,7 @@ void Shell::handleUserInput(string userInput) {
 
 		int seconds = atoi(tmp.c_str());
 
-		cout << "use this method to restrict running time for a prog: restrictRunningTime(seconds)" << endl;
+		cout << "use this method to restrict running time for a prog: JobControl::setTimeLimit(seconds)" << endl;
 		cout << "in ur case:" << endl;
 		cout << "seconds = " << seconds << endl;
 

@@ -226,7 +226,9 @@ void Shell::handleUserInput(string userInput) {
 			cout << "use this method: setNewDataPath(userInput.substr(5, userInput.length()));" << endl;
 
 		}
-	}else if(strncmp (input, "$?x", 2) == 0){
+	}
+	
+	if(strncmp (input, "$?x", 2) == 0){
 		//check exit status for the command# after $?
 		int cmd = input[3];
 		if(cmd > 47 && cmd < 58){
@@ -239,7 +241,8 @@ void Shell::handleUserInput(string userInput) {
 
 		}
 
-	}else if(userInput.length() > 7){
+	}
+	if(userInput.length() > 7){
 
 		if(userInput.substr(0, 7) == "CPUMAX="){
 			//sets maximum CPU utilization
@@ -272,7 +275,8 @@ void Shell::handleUserInput(string userInput) {
 			cout << "seconds = " << seconds << endl;
 		}
 
-	}else if(userInput.length() > 8 && userInput.substr(0, 8) == "TIMEMAX="){
+	}
+	if(userInput.length() > 8 && userInput.substr(0, 8) == "TIMEMAX="){
 		//restricts running time of program
 		pos = userInput.find("=");
 		tmp = userInput.substr(pos);

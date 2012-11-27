@@ -46,7 +46,7 @@ private:
     void setStartPath();
     void updateCurrentPath(char newPath[]);
 	 list<string> commands;
-	 void checkCommand(string userInput, int background);
+	 void checkCommand(string userInput);
     void handleUserInput(string userInput);
     
     void launchProcess(Process *p, pid_t pgid, int infile, int outfile,

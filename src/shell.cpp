@@ -583,8 +583,8 @@ void Shell::showJobs() {
     Job *job = firstJob;
 
     while(job) {
-
-        cout << job->pgid << "\n";
+        cout <<"Command name / PID";
+        cout <<job->name << ": " job->pgid << "\n";
         job = job->nextJob;
     }
 }
@@ -602,4 +602,8 @@ void Shell::addJob(Job *j) {
 
         jobTemp->nextJob = jobTemp;
     }
+}
+
+void Shell::killJob(){
+    
 }

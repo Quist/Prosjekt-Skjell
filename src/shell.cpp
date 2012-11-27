@@ -11,12 +11,12 @@ int main() {
 }
 
 Shell::Shell() {
-        History his;
+	History his;
 	initShell();
 	setStartPath();
 	cmdSetPath = "PATH=";
 	cmdSetDataPath = "DATA=";
-    firstJob;
+	firstJob;
 }
 
 /*
@@ -90,7 +90,7 @@ void Shell::setStartPath() {
 				path = cmd;
 			}
 		}
-		
+
 		found = path.find("PATH=");
 		tmp = path.substr(found + 6, path.length());
 		strcpy(currentPath, tmp.c_str());
@@ -100,7 +100,7 @@ void Shell::setStartPath() {
 		if(!dirChecker(pathP1) || !dirChecker(pathP2)) {
 			getcwd(currentPathPtr, 1024);
 		}	
-		
+
 		found = data.find("DATA=");
 		tmp = data.substr(found + 6, data.length());
 		strcpy(currentData, tmp.c_str());
@@ -168,7 +168,7 @@ void Shell::checkCommand(string userInput){
 		prepareJob(userInput.substr(0, userInput.length()-1), 0);
 		cout << "This process will be run in background" << endl;
 	}else if(posAmp != string::npos){
-		
+
 		string cmd = userInput.substr(0, posAmp); 
 		commands.push_front(cmd);
 		cmd = userInput.substr(posAmp);
@@ -177,14 +177,54 @@ void Shell::checkCommand(string userInput){
 	}else if(posOr != string::npos){
 
 	}else if(forLoop != string::npos){
-		
+		int incrementing = 0;
+		int start;
+		int goesTo;
+		int lessThan;
+		string lengthTmp;
+		string startVal;
+		string command;
+
 		size_t pos = userInput.find("(");
 
 		string tmp = userInput.substr(pos);
 
 		pos = tmp.find(")");
-
+		command = tmp.substr(pos+2,tmp.length());
 		tmp = tmp.substr(0, (int) pos);
+
+		if(strncmp(tmp.substr(tmp.length()-2, tmp.length()).c_str(), "++", 2) == 0){
+			incrementing = 1;
+		}else if(strncmp(tmp.substr(tmp.length()-2, tmp.length()).c_str(), "--", 2) == 0){
+			incrementing = 0;
+		}
+
+		pos = tmp.find(";");
+		lengthTmp = tmp.substr(pos);
+		
+		tmp = tmp.substr(1, pos-1);
+		pos = tmp.find("=");
+		startVal = tmp.substr(pos+1);
+		start = atoi(startVal.c_str());
+
+		pos = lengthTmp.find("<");
+		if(pos == string::npos){
+			lessThan = 1;
+			pos = lengthTmp.find(">");
+		}else{
+			lessThan = 0;
+		}
+
+		if(pos != string::npos){
+			lengthTmp = lengthTmp.substr(pos);
+			pos = lengthTmp.find(";");
+			lengthTmp = lengthTmp.substr(1,pos-1);
+			goesTo = atoi(lengthTmp.c_str());
+		}else{
+			return;
+		}
+		
+		execForLoop(command, start, goesTo, incrementing, lessThan);
 
 
 
@@ -195,7 +235,29 @@ void Shell::checkCommand(string userInput){
 	}
 }
 
-
+void Shell::execForLoop(string command, int start, int end, int increment, int lessThan){
+	if(lessThan){
+		if(increment){
+			for(int i = start; i < end; i++){
+				checkCommand(command);
+			}
+		}else{
+			for(int i = start; i < end; i--){
+				checkCommand(command);
+			}
+		}
+	}else{
+		if(increment){
+			for(int i = start; i > end; i++){
+				checkCommand(command);
+			}
+		}else{
+			for(int i = start; i > end; i--){
+				checkCommand(command);
+			}
+		}
+	}
+}
 
 
 void Shell::handleUserInput(string userInput) {
@@ -209,15 +271,15 @@ void Shell::handleUserInput(string userInput) {
 	size_t pos;
 	string tmp;
 
-/*
-	if (userInput.compare(0, cmdSetDataPath.length(), cmdSetDataPath) == 0) {
+	/*
+		if (userInput.compare(0, cmdSetDataPath.length(), cmdSetDataPath) == 0) {
 		cout << "SUCCESS!\n";
-	} else {
+		} else {
 		const char* cmd = userInput.c_str();
-		//startProcess(cmd);
-		testJob(cmd);
+	//startProcess(cmd);
+	testJob(cmd);
 	}  
-	*/
+	 */
 
 	if(userInput.length() > 5){
 
@@ -236,7 +298,7 @@ void Shell::handleUserInput(string userInput) {
 
 		}
 	}
-	
+
 	if(strncmp (input, "$?x", 2) == 0){
 		//check exit status for the command# after $?
 		int cmd = input[3];
@@ -375,80 +437,80 @@ void Shell::prepareJob(string cmd, int foreground) {
 }
 
 void Shell::launchJob(Job *j, int foreground){
-    //addJob(j);
-    Process *p = j->firstProcess;
-    pid_t pid;
-    int outfile;
-    int infile = j->stdin;
-    int mypipe[2];
+	//addJob(j);
+	Process *p = j->firstProcess;
+	pid_t pid;
+	int outfile;
+	int infile = j->stdin;
+	int mypipe[2];
 
-    for(p = j->firstProcess; p; p = p-> next) {
-        
-        /*setting up pipes*/
-        if (p->next) {
-            cout << "CAME HERE!";
+	for(p = j->firstProcess; p; p = p-> next) {
 
-            if (pipe(mypipe) < 0) {
-                perror ("pipe");
-                exit(1);
-            }
-            outfile = mypipe[1];
-        }
-        else {
-            outfile = j->stdout;
-        }
+		/*setting up pipes*/
+		if (p->next) {
+			cout << "CAME HERE!";
 
-        /* forking the child process */
-        pid = fork();
+			if (pipe(mypipe) < 0) {
+				perror ("pipe");
+				exit(1);
+			}
+			outfile = mypipe[1];
+		}
+		else {
+			outfile = j->stdout;
+		}
 
-        //Child:
-        if(pid == 0){      
-            launchProcess(p, j->pgid, infile, outfile, j->stderr, foreground);
-        } 
-        else if (pid < 0) {
-            perror("fork");
-            exit(1);
-        } 
-        else { //only for the parent process
-            p->pid = pid;
-            if(interactive){
+		/* forking the child process */
+		pid = fork();
 
-                //Sets the jobs process group id to the first process pid.
-                if(!j->pgid){
-                    j->pgid = pid;
-                    setpgid (pid, j->pgid);
-                }            
-            }        
-        }
+		//Child:
+		if(pid == 0){      
+			launchProcess(p, j->pgid, infile, outfile, j->stderr, foreground);
+		} 
+		else if (pid < 0) {
+			perror("fork");
+			exit(1);
+		} 
+		else { //only for the parent process
+			p->pid = pid;
+			if(interactive){
 
-        //closing the file if piping is done
-        if (infile != j-> stdin) {
-            close(infile);
-        }
-        if (outfile != j->stdout) {
-            close(outfile);
-        }
+				//Sets the jobs process group id to the first process pid.
+				if(!j->pgid){
+					j->pgid = pid;
+					setpgid (pid, j->pgid);
+				}            
+			}        
+		}
 
-        infile = mypipe[0];
+		//closing the file if piping is done
+		if (infile != j-> stdin) {
+			close(infile);
+		}
+		if (outfile != j->stdout) {
+			close(outfile);
+		}
 
-    }
+		infile = mypipe[0];
+
+	}
 
 
-    if(!interactive){
-       waitForJob(j); 
-    }
-    else if(foreground){
-        putJobInForeground(j, 0);
-    }else{
-        putJobInBackground(j,0);
-    }
-    
+	if(!interactive){
+		waitForJob(j); 
+	}
+	else if(foreground){
+		putJobInForeground(j, 0);
+	}else{
+		putJobInBackground(j,0);
+	}
+
 }
 
 void Shell::putJobInForeground(Job *j, int cont) {
 	//Gives the terminal to the job:
 	tcsetpgrp(foregroundTerminal, j->pgid);
-       
+
 
 	//Sends continue signal to the job:
 	if (cont) {
@@ -458,7 +520,7 @@ void Shell::putJobInForeground(Job *j, int cont) {
 	}
 
 	waitForJob(j);
-        
+
 	//Put the shell back in the foreground.
 	tcsetpgrp(foregroundTerminal, shellPGID);
 
@@ -506,7 +568,7 @@ void Shell::waitForJob(Job *j) {
 
 	do {
 		pid = waitpid(WAIT_ANY, &status, WUNTRACED);
-                his.addExitStat(status);
+		his.addExitStat(status);
 	} while (!markProcessStatus(pid, status)
 			&& !jobIsStopped(j)
 			&& !jobIsCompleted(j));
@@ -622,28 +684,28 @@ bool Shell::dirChecker(char dir[]) {
 }
 
 void Shell::showJobs() {
-    if(firstJob) {
-        Job *job = firstJob;
+	if(firstJob) {
+		Job *job = firstJob;
 
-        while(job) {
+		while(job) {
 
-            cout << job->pgid << "\n";
-            job = job->nextJob;
-        }
-    }
+			cout << job->pgid << "\n";
+			job = job->nextJob;
+		}
+	}
 }
 
 void Shell::addJob(Job *j) {
-    if (!firstJob) {
-        firstJob = j;
-    }
-    else {
-        Job *jobTemp = firstJob;
+	if (!firstJob) {
+		firstJob = j;
+	}
+	else {
+		Job *jobTemp = firstJob;
 
-        while(jobTemp->nextJob) {
-            jobTemp = jobTemp->nextJob;
-        }
+		while(jobTemp->nextJob) {
+			jobTemp = jobTemp->nextJob;
+		}
 
-        jobTemp->nextJob = jobTemp;
-    }
+		jobTemp->nextJob = jobTemp;
+	}
 }

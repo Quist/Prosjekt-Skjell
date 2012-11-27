@@ -39,7 +39,7 @@ private:
 	char currentData[1024];
 
     void test(string cmd);
-    void testJob(string cmd);
+    void prepareJob(string cmd, int foreground);
     void testPiping();
     
     void initShell();

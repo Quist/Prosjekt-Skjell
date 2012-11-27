@@ -308,7 +308,7 @@ void Shell::test(string cmd) {
 	launchProcess(p, 0, 0,0,0,1 );
 }
 
-void Shell::testJob(string cmd) {
+void Shell::prepareJob(string cmd, int foreground) {
 	char *cString;
 	char *tokens[10];
 
@@ -327,9 +327,9 @@ void Shell::testJob(string cmd) {
 
 	Process *p = new Process(&*tokens);
 
-	Job *j = new Job(p);
+	Job *j = new Job(p, cmd);
 
-	launchJob(j, 0);
+	launchJob(j, foreground);
 }
 
 void Shell::launchJob(Job *j, int foreground){
@@ -578,12 +578,14 @@ bool Shell::dirChecker(char dir[]) {
 }
 
 void Shell::showJobs() {
-    Job *job = firstJob;
+    if(firstJob) {
+        Job *job = firstJob;
 
-    while(job) {
+        while(job) {
 
-        cout << job->pgid << "\n";
-        job = job->nextJob;
+            cout << job->pgid << "\n";
+            job = job->nextJob;
+        }
     }
 }
 

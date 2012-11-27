@@ -259,7 +259,7 @@ void Shell::testJob(string cmd) {
 
 	Job *j = new Job(p);
 
-	launchJob(j, 0);
+	launchJob(j, 1);
 }
 
 
@@ -336,6 +336,7 @@ void Shell::launchJob(Job *j, int foreground){
 void Shell::putJobInForeground(Job *j, int cont) {
 	//Gives the terminal to the job:
 	tcsetpgrp(foregroundTerminal, j->pgid);
+       
 
 	//Sends continue signal to the job:
 	if (cont) {
@@ -345,7 +346,7 @@ void Shell::putJobInForeground(Job *j, int cont) {
 	}
 
 	waitForJob(j);
-
+        
 	//Put the shell back in the foreground.
 	tcsetpgrp(foregroundTerminal, shellPGID);
 
@@ -393,6 +394,7 @@ void Shell::waitForJob(Job *j) {
 
 	do {
 		pid = waitpid(WAIT_ANY, &status, WUNTRACED);
+                his->addExitStat(status);
 	} while (!markProcessStatus(pid, status)
 			&& !jobIsStopped(j)
 			&& !jobIsCompleted(j));

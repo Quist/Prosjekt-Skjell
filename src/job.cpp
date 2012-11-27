@@ -9,4 +9,5 @@ Job::Job(Process *p){
     stdin = 0;
     stdout = 0;
     stderr = 0;
+    timeCreated = time(0);
 }

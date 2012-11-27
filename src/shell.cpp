@@ -11,7 +11,7 @@ int main() {
 }
 
 Shell::Shell() {
-    History his;
+        History his;
 	initShell();
 	setStartPath();
 	cmdSetPath = "PATH=";
@@ -464,7 +464,7 @@ void Shell::waitForJob(Job *j) {
 
 	do {
 		pid = waitpid(WAIT_ANY, &status, WUNTRACED);
-                his->addExitStat(status);
+                his.addExitStat(status);
 	} while (!markProcessStatus(pid, status)
 			&& !jobIsStopped(j)
 			&& !jobIsCompleted(j));

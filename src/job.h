@@ -14,8 +14,6 @@ using namespace std;
 #include <sys/wait.h>
 #include <stdio.h>
 
-
-
 //Program includes:
 #include "process.h"
 
@@ -34,7 +32,7 @@ public:
     pid_t pgid;
     struct termios tmodes;      /* saved terminal modes */
     time_t timeCreated;
-
+    
     int outPutFile(const char* filename);
     
     

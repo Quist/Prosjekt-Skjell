@@ -290,7 +290,7 @@ void Shell::handleUserInput(string userInput) {
 			//Could not find the command you specified
 			prepareJob(userInput, 1);
 
-			cout << "Couldn't find the command you specified" << endl;
+			cout << "Preparing job..." << endl;
 			
 	}
 

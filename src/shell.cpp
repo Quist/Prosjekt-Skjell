@@ -291,7 +291,6 @@ void Shell::handleUserInput(string userInput) {
 			cout << "Couldn't find the command you specified" << endl;
 			
 	}
-
 }
 
 void Shell::test(string cmd) {
@@ -591,8 +590,8 @@ void Shell::showJobs() {
     Job *job = firstJob;
 
     while(job) {
-        cout <<"Command name / PID";
-        cout <<job->name << ": " job->pgid << "\n";
+        cout <<"Command name \t PID";
+        cout <<job->name << " \t" job->pgid << "\n";
         job = job->nextJob;
     }
 }

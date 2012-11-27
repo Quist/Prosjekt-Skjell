@@ -61,10 +61,11 @@ private:
     int jobIsCompleted(Job *j);
     void addJob(Job *j);
     void showJobs();
+    void killJob();
 
     void writeToFile(string fileName, list<string> l);
     void readFile(string fileName);
-	bool dirChecker(char dir[]);
+    bool dirChecker(char dir[]);
 
 
     //Shell commands:

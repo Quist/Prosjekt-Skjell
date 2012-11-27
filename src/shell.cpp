@@ -134,12 +134,12 @@ void Shell::orderLoop() {
 		if((userInput.compare(0, 4, "exit") == 0)) {
 			exit(0);
 		}
-		checkCommand(userInput, false);
+		checkCommand(userInput);
 		//handleUserInput(userInput);
 	}
 }
 
-void Shell::checkCommand(string userInput, int background){
+void Shell::checkCommand(string userInput){
 	size_t posAmp;
 	size_t posOr;
 	size_t forLoop;
@@ -160,7 +160,7 @@ void Shell::checkCommand(string userInput, int background){
 		//check this commmand but this time with only the commands before
 		//the '&'
 		//TODO make sure this command runs in background!
-		checkCommand(userInput.substr(userInput.length()-1, userInput.length()), 1);
+		prepareJob(userInput.substr(0, userInput.length()-1), 0);
 		cout << "This process will be run in background" << endl;
 	}else if(posAmp != string::npos){
 		
@@ -288,6 +288,8 @@ void Shell::handleUserInput(string userInput) {
 	
 	}else{
 			//Could not find the command you specified
+			prepareJob(userInput, 1);
+
 			cout << "Couldn't find the command you specified" << endl;
 			
 	}

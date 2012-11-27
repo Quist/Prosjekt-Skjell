@@ -151,14 +151,16 @@ void Shell::checkCommand(string userInput){
 
 	posAmp = userInput.find("&&");
 	posOr = userInput.find("||");
-	forLoop = userInput.find("for(");
+	forLoop = userInput.find("For(");
 	variable = userInput.find("$");
 	redirLess = userInput.find("<");
 	redirBigger = userInput.find(">");
 	redirLessTwo = userInput.find("2>");
 
 
-	if(userInput.compare(userInput.length()-1, 1, "&") == 0){
+	if(userInput.length() == 0){
+		//No command given
+	}else if(userInput.compare(userInput.length()-1, 1, "&") == 0){
 		//check this commmand but this time with only the commands before
 		//the '&'
 		//TODO make sure this command runs in background!
@@ -174,6 +176,16 @@ void Shell::checkCommand(string userInput){
 	}else if(posOr != string::npos){
 
 	}else if(forLoop != string::npos){
+		
+		size_t pos = userInput.find("(");
+
+		string tmp = userInput.substr(pos);
+
+		pos = tmp.find(")");
+
+		tmp = tmp.substr(0, (int) pos);
+
+
 
 	}else{
 
@@ -181,7 +193,6 @@ void Shell::checkCommand(string userInput){
 
 	}
 }
-
 
 
 
@@ -207,20 +218,25 @@ void Shell::handleUserInput(string userInput) {
 	}  
 	*/
 
-	if(userInput.substr(0,5) == cmdSetPath){
-		//set a persistent executable path
+	if(userInput.length() > 5){
 
-		//TODO make this method, taking a string
-		//representing the executable path
-		cout << "use this method : setNewPath(userInput.substr(5, userInput.length()));" << endl;
+		if(userInput.substr(0,5) == cmdSetPath){
+			//set a persistent executable path
 
-	}else if(userInput.substr(0,5) == cmdSetDataPath){
-		//set a persistet data file path
-		//TODO make this method, taking a string, representing
-		//the path to the data file
-		cout << "use this method: setNewDataPath(userInput.substr(5, userInput.length()));" << endl;
+			//TODO make this method, taking a string
+			//representing the executable path
+			cout << "use this method : setNewPath(userInput.substr(5, userInput.length()));" << endl;
 
-	}else if(strncmp (input, "$?x", 2) == 0){
+		}else if(userInput.substr(0,5) == cmdSetDataPath){
+			//set a persistet data file path
+			//TODO make this method, taking a string, representing
+			//the path to the data file
+			cout << "use this method: setNewDataPath(userInput.substr(5, userInput.length()));" << endl;
+
+		}
+	}
+	
+	if(strncmp (input, "$?x", 2) == 0){
 		//check exit status for the command# after $?
 		int cmd = input[3];
 		if(cmd > 47 && cmd < 58){
@@ -233,38 +249,42 @@ void Shell::handleUserInput(string userInput) {
 
 		}
 
-	}else if(userInput.substr(0, 7) == "CPUMAX="){
-		//sets maximum CPU utilization
-		pos = userInput.find("=");
-		tmp = userInput.substr(pos);
-		tmp = tmp.substr(1, tmp.length());
+	}
+	if(userInput.length() > 7){
 
-		pos = tmp.find(":");
-		int percentage = atoi(tmp.substr(0, (int) pos).c_str());
-		int seconds = atoi(tmp.substr((int) pos + 1, tmp.length()).c_str());
+		if(userInput.substr(0, 7) == "CPUMAX="){
+			//sets maximum CPU utilization
+			pos = userInput.find("=");
+			tmp = userInput.substr(pos);
+			tmp = tmp.substr(1, tmp.length());
 
-		cout << "use this method: restrictCPU(seconds, percentage)" << endl;
-		cout << "in ur case:" << endl;
-		cout << "seconds = " << seconds << endl;
-		cout << "percentage = " << percentage << endl;
+			pos = tmp.find(":");
+			int percentage = atoi(tmp.substr(0, (int) pos).c_str());
+			int seconds = atoi(tmp.substr((int) pos + 1, tmp.length()).c_str());
 
-	}else if(userInput.substr(0,7) == "MEMMAX="){
-		//Assuming you can only set megabytes restriction
-		pos = userInput.find("=");
-		tmp = userInput.substr(pos);
-		tmp = tmp.substr(1, tmp.length());
+			cout << "use this method: restrictCPU(seconds, percentage)" << endl;
+			cout << "in ur case:" << endl;
+			cout << "seconds = " << seconds << endl;
+			cout << "percentage = " << percentage << endl;
 
-		pos = tmp.find(":");
-		int megaBytes = atoi ( tmp.substr(0, (int) pos -1).c_str()); 
-		int seconds = atoi ( tmp.substr((int) pos + 1, tmp.length()).c_str());
+		}else if(userInput.substr(0,7) == "MEMMAX="){
+			//Assuming you can only set megabytes restriction
+			pos = userInput.find("=");
+			tmp = userInput.substr(pos);
+			tmp = tmp.substr(1, tmp.length());
 
-		cout << "use this method: restrictMEM(megaBytes, seconds)" << endl;
-		cout << "in ur case:" << endl;
-		cout << "megaBytes = " << megaBytes << endl;
-		cout << "seconds = " << seconds << endl;
+			pos = tmp.find(":");
+			int megaBytes = atoi ( tmp.substr(0, (int) pos -1).c_str()); 
+			int seconds = atoi ( tmp.substr((int) pos + 1, tmp.length()).c_str());
 
+			cout << "use this method: restrictMEM(megaBytes, seconds)" << endl;
+			cout << "in ur case:" << endl;
+			cout << "megaBytes = " << megaBytes << endl;
+			cout << "seconds = " << seconds << endl;
+		}
 
-	}else if(userInput.substr(0, 8) == "TIMEMAX="){
+	}
+	if(userInput.length() > 8 && userInput.substr(0, 8) == "TIMEMAX="){
 		//restricts running time of program
 		pos = userInput.find("=");
 		tmp = userInput.substr(pos);
@@ -279,25 +299,31 @@ void Shell::handleUserInput(string userInput) {
 
 
 	}else if(userInput.find("=") != string::npos && userInput.find(";") != string::npos){
-			//Initialize a new variable
-			pos = userInput.find(";");
-			//TODO THIS MUST BE DONE!
-			
-			cout << "hist.saveVariable(userInput.substr(0, pos));" << endl;
+		//Initialize a new variable
+		pos = userInput.find(";");
+		//TODO THIS MUST BE DONE!
 
-			cout << "saved variable: " << userInput.substr(0, userInput.find("=")) << endl;
+		cout << "hist.saveVariable(userInput.substr(0, pos));" << endl;
+
+		cout << "saved variable: " << userInput.substr(0, userInput.find("=")) << endl;
 
 	}else if(userInput.compare(0, userInput.length(), "listjobs") == 0){
-            cerr << "1. Før metode kall\n";
-            showJobs();
-                 cerr << "3.Etter metode kall\n";
-	
-	}else{
-			//Could not find the command you specified
-			prepareJob(userInput, 1);
 
-			cout << "Preparing job..." << endl;
-			
+		showJobs();
+
+	}else if(userInput.length() > 3 && userInput.substr(0,2) == "fg"){
+		string tmp = userInput.substr(3, userInput.length());
+		int jobNum = atoi (tmp.c_str());
+		bringJobToForeground(jobNum);
+
+		//TODO new command: fg tall, vil bare ha int'en i method: bringJobToForeground(int i);
+	}else{
+		//Could not find the command you specified
+
+		cout << "Preparing job..." << endl;
+		prepareJob(userInput, 1);
+
+
 	}
 }
 
@@ -551,9 +577,8 @@ void Shell::launchProcess(Process *p, pid_t pgid, int infile, int outfile,
 		close(errfile);
 	}
 
-	//Executes the new process and exits after the execution.
+	//Executes the new process and only returns if error
 	execvp(p->args[0], p->args);
-        cout << "FERDIG MED PROSSESEN!";
 	perror("execvp");
 	exit(1);
 
@@ -640,4 +665,24 @@ void Shell::killJob(int pgid) {
         return;
     }
     kill(j->pgid, SIGKILL);
+}
+
+void Shell::removeJob(int pgid) {
+    Job *j = firstJob;
+    
+    if(!firstJob){
+        return;
+    }
+  
+    if(pgid == firstJob->pgid){
+        firstJob = firstJob->nextJob;
+    }
+    for (j = firstJob; j; j = j->nextJob) {
+        if (j->nextJob) {
+            if (j->nextJob->pgid == pgid) {
+                j->nextJob = j->nextJob->nextJob;
+            }
+        }
+        
+    }
 }

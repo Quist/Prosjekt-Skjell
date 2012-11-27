@@ -134,12 +134,12 @@ void Shell::orderLoop() {
 		if((userInput.compare(0, 4, "exit") == 0)) {
 			exit(0);
 		}
-		checkCommand(userInput, false);
+		checkCommand(userInput);
 		//handleUserInput(userInput);
 	}
 }
 
-void Shell::checkCommand(string userInput, int background){
+void Shell::checkCommand(string userInput){
 	size_t posAmp;
 	size_t posOr;
 	size_t forLoop;
@@ -160,7 +160,7 @@ void Shell::checkCommand(string userInput, int background){
 		//check this commmand but this time with only the commands before
 		//the '&'
 		//TODO make sure this command runs in background!
-		checkCommand(userInput.substr(userInput.length()-1, userInput.length()), 1);
+		prepareJob(userInput.substr(0, userInput.length()-1), 0);
 		cout << "This process will be run in background" << endl;
 	}else if(posAmp != string::npos){
 		
@@ -288,7 +288,9 @@ void Shell::handleUserInput(string userInput) {
 	
 	}else{
 			//Could not find the command you specified
-			cout << "Couldn't find the command you specified" << endl;
+			prepareJob(userInput, 1);
+
+			cout << "Preparing job..." << endl;
 			
 	}
 }
@@ -315,7 +317,7 @@ void Shell::test(string cmd) {
 	launchProcess(p, 0, 0,0,0,1 );
 }
 
-void Shell::testJob(string cmd) {
+void Shell::prepareJob(string cmd, int foreground) {
 	char *cString;
 	char *tokens[10];
 
@@ -334,9 +336,9 @@ void Shell::testJob(string cmd) {
 
 	Process *p = new Process(&*tokens);
 
-	Job *j = new Job(p);
+	Job *j = new Job(p, cmd);
 
-	launchJob(j, 1);
+	launchJob(j, foreground);
 }
 
 void Shell::launchJob(Job *j, int foreground){
@@ -587,15 +589,16 @@ bool Shell::dirChecker(char dir[]) {
 }
 
 void Shell::showJobs() {
-    Job *job = firstJob;
+    if (firstJob) {
+        Job *job = firstJob;
 
-    while(job) {
-        cout <<"Command name \t PID";
-        cout <<job->name << " \t" job->pgid << "\n";
-        job = job->nextJob;
+        while (job) {
+            cout << "Command name \t PID";
+            cout << job->name << " \t" job->pgid << "\n";
+            job = job->nextJob;
+        }
     }
 }
-
 void Shell::addJob(Job *j) {
     if (!firstJob) {
         firstJob = j;

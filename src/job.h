@@ -22,7 +22,8 @@ using namespace std;
  */
 class Job {
 public:
-    Job(Process *p);
+    Job(Process *p, string name);
+    string name;
     int stdin;
     int stdout;
     int stderr; /* standard i/o channels */
@@ -34,6 +35,8 @@ public:
     time_t timeCreated;
     
     int outPutFile(const char* filename);
+    int inPutFile(const char* filename);
+    int errPutFile(const char* filename);
     
     
 private:    

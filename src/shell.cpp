@@ -16,7 +16,8 @@ Shell::Shell() {
 	setStartPath();
 	cmdSetPath = "PATH=";
 	cmdSetDataPath = "DATA=";
-    firstJob;
+        jobCount = 0;
+        firstJob = NULL;
 }
 
 /*
@@ -289,7 +290,9 @@ void Shell::handleUserInput(string userInput) {
 			cout << "saved variable: " << userInput.substr(0, userInput.find("=")) << endl;
 
 	}else if(userInput.compare(0, userInput.length(), "listjobs") == 0){
-			showJobs();
+            cerr << "1. Før metode kall\n";
+            showJobs();
+                 cerr << "3.Etter metode kall\n";
 	
 	}else{
 			//Could not find the command you specified
@@ -346,9 +349,10 @@ void Shell::prepareJob(string cmd, int foreground) {
 	launchJob(j, foreground);
 }
 
-void Shell::launchJob(Job *j, int foreground){
-    //addJob(j);
+void Shell::launchJob(Job *j, int foreground) {
+
     Process *p = j->firstProcess;
+    addJob(j);
     pid_t pid;
     int outfile;
     int infile = j->stdin;
@@ -430,6 +434,7 @@ void Shell::putJobInForeground(Job *j, int cont) {
 	}
 
 	waitForJob(j);
+        removeJob();
         
 	//Put the shell back in the foreground.
 	tcsetpgrp(foregroundTerminal, shellPGID);
@@ -551,6 +556,7 @@ void Shell::launchProcess(Process *p, pid_t pgid, int infile, int outfile,
 
 	//Executes the new process and exits after the execution.
 	execvp(p->args[0], p->args);
+        cout << "FERDIG MED PROSSESEN!";
 	perror("execvp");
 	exit(1);
 
@@ -594,16 +600,12 @@ bool Shell::dirChecker(char dir[]) {
 }
 
 void Shell::showJobs() {
-    if (firstJob) {
-        Job *job = firstJob;
-
-        while (job) {
-            cout << "Command name \t PID";
-            cout << job->name << " \t" job->pgid << "\n";
-            job = job->nextJob;
-        }
+    Job *j;
+    for (j = firstJob; j; j = j->nextJob) {
+        cout << j->pgid << " \t" << j->name << "\n";
     }
 }
+
 void Shell::addJob(Job *j) {
     if (!firstJob) {
         firstJob = j;
@@ -614,8 +616,7 @@ void Shell::addJob(Job *j) {
         while(jobTemp->nextJob) {
             jobTemp = jobTemp->nextJob;
         }
-
-        jobTemp->nextJob = jobTemp;
+        jobTemp->nextJob = j;
     }
 }
 

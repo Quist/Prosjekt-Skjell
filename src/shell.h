@@ -32,11 +32,11 @@ private:
     struct termios shellMode;
     int foregroundTerminal;
     int interactive;
-
+    int jobCount;
     Job *firstJob;
     
     char currentPath[1024];
-	char currentData[1024];
+    char currentData[1024];
 
     void test(string cmd);
     void prepareJob(string cmd, int foreground);

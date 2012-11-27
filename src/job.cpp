@@ -10,6 +10,9 @@ Job::Job(Process *p, string n){
     stdin = 0; //Standard value in file descriptor
     stdout = 1; //Standard value out file descriptor
     stderr = 2; //standard value err file descriptor
+   
+    nextJob = NULL;
+    
     timeCreated = time(0);
 }
 

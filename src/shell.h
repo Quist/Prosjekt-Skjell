@@ -27,7 +27,7 @@ public:
     Shell();
 
 private:
-
+    History his;
     pid_t shellPGID;
     struct termios shellMode;
     int foregroundTerminal;
@@ -40,6 +40,7 @@ private:
 
     void test(string cmd);
     void testJob(string cmd);
+    void testPiping();
     
     void initShell();
     void setStartPath();

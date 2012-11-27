@@ -7,7 +7,7 @@ class History{
 
 private:
    string commands[10];
-   string exitStat[10];
+   int exitStat[10];
    int lastGetCommand;
    int maxHistoryCommand;
    int maxHistoryExitStat;
@@ -21,8 +21,8 @@ public:
    string getPreviousCommand();
    void addCommand(string newCommand);
 
-   string getExitStat(int i);
-   void addExitStat(string newExitStat);
+   int getExitStat(int i);
+   void addExitStat(int newExitStat);
    void saveVariable(string input);
    char *getVariable(string input);
 

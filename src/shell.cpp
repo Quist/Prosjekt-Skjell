@@ -1,7 +1,7 @@
 
 #include "shell.h"
 
-
+#include <stdio.h>
 using namespace std;
 
 int main() {
@@ -11,11 +11,12 @@ int main() {
 }
 
 Shell::Shell() {
+    History his;
 	initShell();
 	setStartPath();
 	cmdSetPath = "PATH=";
 	cmdSetDataPath = "DATA=";
-    firstJob = NULL;
+    firstJob;
 }
 
 /*
@@ -176,6 +177,7 @@ void Shell::checkCommand(string userInput, int background){
 
 
 void Shell::handleUserInput(string userInput) {
+
 	//copying string to charArray
 	char *input = new char[userInput.size() + 1];
 	input[userInput.size()] = 0;
@@ -190,8 +192,8 @@ void Shell::handleUserInput(string userInput) {
 		cout << "SUCCESS!\n";
 	} else {
 		const char* cmd = userInput.c_str();
-		// startProcess(cmd);
-		testJob(userInput);
+		//startProcess(cmd);
+		testJob(cmd);
 	}  
 
 	if(userInput.substr(0,5) == "PATH="){
@@ -281,6 +283,7 @@ void Shell::handleUserInput(string userInput) {
 
 
 	}
+
 }
 
 void Shell::test(string cmd) {
@@ -329,7 +332,6 @@ void Shell::testJob(string cmd) {
 	launchJob(j, 0);
 }
 
-
 void Shell::launchJob(Job *j, int foreground){
     //addJob(j);
     Process *p = j->firstProcess;
@@ -338,10 +340,11 @@ void Shell::launchJob(Job *j, int foreground){
     int infile = j->stdin;
     int mypipe[2];
 
-    do {
+    for(p = j->firstProcess; p; p = p-> next) {
         
         /*setting up pipes*/
-        if (p->next != NULL) {
+        if (p->next) {
+            cout << "CAME HERE!";
 
             if (pipe(mypipe) < 0) {
                 perror ("pipe");
@@ -386,7 +389,7 @@ void Shell::launchJob(Job *j, int foreground){
 
         infile = mypipe[0];
 
-    } while((p = p->next) != NULL);
+    }
 
 
     if(!interactive){
@@ -577,7 +580,7 @@ bool Shell::dirChecker(char dir[]) {
 void Shell::showJobs() {
     Job *job = firstJob;
 
-    while(job != NULL) {
+    while(job) {
 
         cout << job->pgid << "\n";
         job = job->nextJob;
@@ -585,13 +588,13 @@ void Shell::showJobs() {
 }
 
 void Shell::addJob(Job *j) {
-    if (firstJob = NULL) {
+    if (!firstJob) {
         firstJob = j;
     }
     else {
         Job *jobTemp = firstJob;
 
-        while(jobTemp->nextJob != NULL) {
+        while(jobTemp->nextJob) {
             jobTemp = jobTemp->nextJob;
         }
 

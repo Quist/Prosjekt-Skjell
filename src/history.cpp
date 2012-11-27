@@ -41,7 +41,7 @@ string History:: getPreviousCommand() {
    }
 }
 
-void History::addExitStat(string newExitStat) {
+void History::addExitStat(int newExitStat) {
 
    for(int i = 0; i < maxHistoryExitStat; i++) {
       exitStat[i+1] = exitStat[i];  
@@ -53,7 +53,7 @@ void History::addExitStat(string newExitStat) {
       maxHistoryExitStat++;
 }
 
-string History::getExitStat(int i) {
+int History::getExitStat(int i) {
    if(i <= maxHistoryExitStat) {
       if(i > 0) {
          return exitStat[i];

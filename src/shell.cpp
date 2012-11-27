@@ -1,7 +1,7 @@
 
 #include "shell.h"
 
-
+#include <stdio.h>
 using namespace std;
 
 int main() {
@@ -11,11 +11,12 @@ int main() {
 }
 
 Shell::Shell() {
+    History his;
 	initShell();
 	setStartPath();
 	cmdSetPath = "PATH=";
 	cmdSetDataPath = "DATA=";
-    firstJob = NULL;
+    firstJob;
 }
 
 /*
@@ -133,11 +134,50 @@ void Shell::orderLoop() {
 		if((userInput.compare(0, 4, "exit") == 0)) {
 			exit(0);
 		}
-		handleUserInput(userInput);
+		checkCommand(userInput, false);
+		//handleUserInput(userInput);
 	}
 }
 
+void Shell::checkCommand(string userInput, int background){
+	size_t posAmp;
+	size_t posOr;
+	size_t forLoop;
+	size_t variable;
+
+	string tmp = "";
+
+	posAmp = userInput.find("&&");
+	posOr = userInput.find("||");
+	forLoop = userInput.find("for(");
+	variable = userInput.find("$");
+
+	if(userInput.compare(userInput.length()-1, 1, "&") == 0){
+		//check this commmand but this time with only the commands before
+		//the '&'
+		//TODO make sure this command runs in background!
+		checkCommand(userInput.substr(userInput.length()-1, userInput.length()), 1);
+		cout << "This process will be run in background" << endl;
+	}else if(posAmp != string::npos){
+		
+		string cmd = userInput.substr(0, posAmp); 
+		commands.push_front(cmd);
+		
+	}else if(posOr != string::npos){
+
+	}else if(forLoop != string::npos){
+
+	}else{
+
+	}
+}
+
+
+
+
+
 void Shell::handleUserInput(string userInput) {
+
 	//copying string to charArray
 	char *input = new char[userInput.size() + 1];
 	input[userInput.size()] = 0;
@@ -148,13 +188,12 @@ void Shell::handleUserInput(string userInput) {
 	string tmp;
 
 
-
 	if (userInput.compare(0, cmdSetDataPath.length(), cmdSetDataPath) == 0) {
 		cout << "SUCCESS!\n";
 	} else {
 		const char* cmd = userInput.c_str();
-		// startProcess(cmd);
-		testJob(userInput);
+		//startProcess(cmd);
+		testJob(cmd);
 	}  
 
 	if(userInput.substr(0,5) == "PATH="){
@@ -176,8 +215,11 @@ void Shell::handleUserInput(string userInput) {
 		if(cmd > 47 && cmd < 58){
 			cmd = cmd - 48;
 			cout << "use this method: his.getExitStat(cmd);" << endl;
+			cout << "u gave wanted exit status for command : " << cmd << endl;
+
 		}else{
 			cout << "Could not find command#: " << input[3] << endl; 
+
 		}
 
 	}else if(userInput.substr(0, 7) == "CPUMAX="){
@@ -190,7 +232,10 @@ void Shell::handleUserInput(string userInput) {
 		int percentage = atoi(tmp.substr(0, (int) pos).c_str());
 		int seconds = atoi(tmp.substr((int) pos + 1, tmp.length()).c_str());
 
-		cout << "use this method: restrictCPU(seconds, percentage);" << endl;
+		cout << "use this method: restrictCPU(seconds, percentage)" << endl;
+		cout << "in ur case:" << endl;
+		cout << "seconds = " << seconds << endl;
+		cout << "percentage = " << percentage << endl;
 
 	}else if(userInput.substr(0,7) == "MEMMAX="){
 		//Assuming you can only set megabytes restriction
@@ -203,6 +248,10 @@ void Shell::handleUserInput(string userInput) {
 		int seconds = atoi ( tmp.substr((int) pos + 1, tmp.length()).c_str());
 
 		cout << "use this method: restrictMEM(megaBytes, seconds)" << endl;
+		cout << "in ur case:" << endl;
+		cout << "megaBytes = " << megaBytes << endl;
+		cout << "seconds = " << seconds << endl;
+
 
 	}else if(userInput.substr(0, 8) == "TIMEMAX="){
 		//restricts running time of program
@@ -213,7 +262,28 @@ void Shell::handleUserInput(string userInput) {
 		int seconds = atoi(tmp.c_str());
 
 		cout << "use this method to restrict running time for a prog: restrictRunningTime(seconds)" << endl;
+		cout << "in ur case:" << endl;
+		cout << "seconds = " << seconds << endl;
+
+
+
+	}else if(userInput.find("=") != string::npos && userInput.find(";") != string::npos){
+			//Initialize a new variable
+			pos = userInput.find(";");
+			//TODO THIS MUST BE DONE!
+			
+			cout << "hist.saveVariable(userInput.substr(0, pos));" << endl;
+
+			cout << "saved variable: " << userInput.substr(0, userInput.find("=")) << endl;
+
+	}else if(userInput.find("$") != string::npos){
+			//replace
+			
+			pos = userInput.find("$"); 
+
+
 	}
+
 }
 
 void Shell::test(string cmd) {
@@ -262,7 +332,6 @@ void Shell::testJob(string cmd) {
 	launchJob(j, 1);
 }
 
-
 void Shell::launchJob(Job *j, int foreground){
     //addJob(j);
     Process *p = j->firstProcess;
@@ -271,10 +340,11 @@ void Shell::launchJob(Job *j, int foreground){
     int infile = j->stdin;
     int mypipe[2];
 
-    do {
+    for(p = j->firstProcess; p; p = p-> next) {
         
         /*setting up pipes*/
-        if (p->next != NULL) {
+        if (p->next) {
+            cout << "CAME HERE!";
 
             if (pipe(mypipe) < 0) {
                 perror ("pipe");
@@ -319,7 +389,7 @@ void Shell::launchJob(Job *j, int foreground){
 
         infile = mypipe[0];
 
-    } while((p = p->next) != NULL);
+    }
 
 
     if(!interactive){
@@ -512,7 +582,7 @@ bool Shell::dirChecker(char dir[]) {
 void Shell::showJobs() {
     Job *job = firstJob;
 
-    while(job != NULL) {
+    while(job) {
 
         cout << job->pgid << "\n";
         job = job->nextJob;
@@ -520,13 +590,13 @@ void Shell::showJobs() {
 }
 
 void Shell::addJob(Job *j) {
-    if (firstJob = NULL) {
+    if (!firstJob) {
         firstJob = j;
     }
     else {
         Job *jobTemp = firstJob;
 
-        while(jobTemp->nextJob != NULL) {
+        while(jobTemp->nextJob) {
             jobTemp = jobTemp->nextJob;
         }
 

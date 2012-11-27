@@ -19,6 +19,10 @@ private:
     void setTimeLimit(int limit);
     int checkTimeLimit(Job *j);
     int timeLimit;
+    int memTimeLimit;
+    int memLimit;
+    int cpuTimeLimit;
+    int cpuLimit;
 };
 
 #endif

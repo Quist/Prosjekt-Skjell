@@ -32,11 +32,11 @@ private:
     struct termios shellMode;
     int foregroundTerminal;
     int interactive;
-
+    int jobCount;
     Job *firstJob;
     
     char currentPath[1024];
-	char currentData[1024];
+    char currentData[1024];
 
     void test(string cmd);
     void prepareJob(string cmd, int foreground);
@@ -62,10 +62,15 @@ private:
     int jobIsCompleted(Job *j);
     void addJob(Job *j);
     void showJobs();
+    void killJob();
+    void bringJobToForeground(int pid);
+    Job* findJob(int pgid);
+    void killJob(int pgid);
+    void removeJob(int pgid);
 
     void writeToFile(string fileName, list<string> l);
     void readFile(string fileName);
-	bool dirChecker(char dir[]);
+    bool dirChecker(char dir[]);
 
 
     //Shell commands:

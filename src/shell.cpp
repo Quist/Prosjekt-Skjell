@@ -16,7 +16,8 @@ Shell::Shell() {
 	setStartPath();
 	cmdSetPath = "PATH=";
 	cmdSetDataPath = "DATA=";
-	firstJob;
+        jobCount = 0;
+        firstJob = NULL;
 }
 
 /*
@@ -57,9 +58,7 @@ void Shell::initShell(){
 
 		/* Save default terminal attributes for shell.  */
 		tcgetattr (foregroundTerminal, &shellMode);
-
 	}
-
 }
 
 void Shell::setStartPath() {
@@ -371,6 +370,7 @@ void Shell::handleUserInput(string userInput) {
 		cout << "saved variable: " << userInput.substr(0, userInput.find("=")) << endl;
 
 	}else if(userInput.compare(0, userInput.length(), "listjobs") == 0){
+
 		showJobs();
 
 	}else if(userInput.length() > 3 && userInput.substr(0,2) == "fg"){
@@ -387,7 +387,6 @@ void Shell::handleUserInput(string userInput) {
 
 
 	}
-
 }
 
 void Shell::test(string cmd) {
@@ -436,75 +435,76 @@ void Shell::prepareJob(string cmd, int foreground) {
 	launchJob(j, foreground);
 }
 
-void Shell::launchJob(Job *j, int foreground){
-	//addJob(j);
-	Process *p = j->firstProcess;
-	pid_t pid;
-	int outfile;
-	int infile = j->stdin;
-	int mypipe[2];
+void Shell::launchJob(Job *j, int foreground) {
 
-	for(p = j->firstProcess; p; p = p-> next) {
+    Process *p = j->firstProcess;
+    addJob(j);
+    pid_t pid;
+    int outfile;
+    int infile = j->stdin;
+    int mypipe[2];
 
-		/*setting up pipes*/
-		if (p->next) {
-			cout << "CAME HERE!";
+    for(p = j->firstProcess; p; p = p-> next) {
+        
+        /*setting up pipes*/
+        if (p->next) {
+            cout << "CAME HERE!";
 
-			if (pipe(mypipe) < 0) {
-				perror ("pipe");
-				exit(1);
-			}
-			outfile = mypipe[1];
-		}
-		else {
-			outfile = j->stdout;
-		}
+            if (pipe(mypipe) < 0) {
+                perror ("pipe");
+                exit(1);
+            }
+            outfile = mypipe[1];
+        }
+        else {
+            outfile = j->stdout;
+        }
 
-		/* forking the child process */
-		pid = fork();
+        /* forking the child process */
+        pid = fork();
 
-		//Child:
-		if(pid == 0){      
-			launchProcess(p, j->pgid, infile, outfile, j->stderr, foreground);
-		} 
-		else if (pid < 0) {
-			perror("fork");
-			exit(1);
-		} 
-		else { //only for the parent process
-			p->pid = pid;
-			if(interactive){
+        //Child:
+        if(pid == 0){      
+            launchProcess(p, j->pgid, infile, outfile, j->stderr, foreground);
+        } 
+        else if (pid < 0) {
+            perror("fork");
+            exit(1);
+        } 
+        else { //only for the parent process
+            p->pid = pid;
+            if(interactive){
 
-				//Sets the jobs process group id to the first process pid.
-				if(!j->pgid){
-					j->pgid = pid;
-					setpgid (pid, j->pgid);
-				}            
-			}        
-		}
+                //Sets the jobs process group id to the first process pid.
+                if(!j->pgid){
+                    j->pgid = pid;
+                    setpgid (pid, j->pgid);
+                }            
+            }        
+        }
 
-		//closing the file if piping is done
-		if (infile != j-> stdin) {
-			close(infile);
-		}
-		if (outfile != j->stdout) {
-			close(outfile);
-		}
+        //closing the file if piping is done
+        if (infile != j-> stdin) {
+            close(infile);
+        }
+        if (outfile != j->stdout) {
+            close(outfile);
+        }
 
-		infile = mypipe[0];
+        infile = mypipe[0];
 
-	}
+    }
 
 
-	if(!interactive){
-		waitForJob(j); 
-	}
-	else if(foreground){
-		putJobInForeground(j, 0);
-	}else{
-		putJobInBackground(j,0);
-	}
-
+    if(!interactive){
+       waitForJob(j); 
+    }
+    else if(foreground){
+        putJobInForeground(j, 0);
+    }else{
+        putJobInBackground(j,0);
+    }
+    
 }
 
 void Shell::putJobInForeground(Job *j, int cont) {
@@ -639,7 +639,7 @@ void Shell::launchProcess(Process *p, pid_t pgid, int infile, int outfile,
 		close(errfile);
 	}
 
-	//Executes the new process and exits after the execution.
+	//Executes the new process and only returns if error
 	execvp(p->args[0], p->args);
 	perror("execvp");
 	exit(1);
@@ -684,28 +684,67 @@ bool Shell::dirChecker(char dir[]) {
 }
 
 void Shell::showJobs() {
-	if(firstJob) {
-		Job *job = firstJob;
-
-		while(job) {
-
-			cout << job->pgid << "\n";
-			job = job->nextJob;
-		}
-	}
+    Job *j;
+    for (j = firstJob; j; j = j->nextJob) {
+        cout << j->pgid << " \t" << j->name << "\n";
+    }
 }
 
 void Shell::addJob(Job *j) {
-	if (!firstJob) {
-		firstJob = j;
-	}
-	else {
-		Job *jobTemp = firstJob;
+    if (!firstJob) {
+        firstJob = j;
+    }
+    else {
+        Job *jobTemp = firstJob;
 
-		while(jobTemp->nextJob) {
-			jobTemp = jobTemp->nextJob;
-		}
+        while(jobTemp->nextJob) {
+            jobTemp = jobTemp->nextJob;
+        }
+        jobTemp->nextJob = j;
+    }
+}
 
-		jobTemp->nextJob = jobTemp;
-	}
+void Shell::bringJobToForeground(int pgid){
+    Job *j = findJob(pgid);
+    if(j){
+        putJobInForeground(j, 1);
+    }
+}
+
+Job* Shell::findJob(int pgid){
+    Job *j;
+    for(j = firstJob; j; j = j->nextJob){
+        if(j->pgid == pgid ){
+            return j;
+        }
+    }
+    return NULL;
+}
+
+void Shell::killJob(int pgid) {
+    Job *j = findJob(pgid);
+    if (j == NULL) {
+        return;
+    }
+    kill(j->pgid, SIGKILL);
+}
+
+void Shell::removeJob(int pgid) {
+    Job *j = firstJob;
+    
+    if(!firstJob){
+        return;
+    }
+  
+    if(pgid == firstJob->pgid){
+        firstJob = firstJob->nextJob;
+    }
+    for (j = firstJob; j; j = j->nextJob) {
+        if (j->nextJob) {
+            if (j->nextJob->pgid == pgid) {
+                j->nextJob = j->nextJob->nextJob;
+            }
+        }
+        
+    }
 }

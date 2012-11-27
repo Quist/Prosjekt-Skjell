@@ -133,9 +133,47 @@ void Shell::orderLoop() {
 		if((userInput.compare(0, 4, "exit") == 0)) {
 			exit(0);
 		}
-		handleUserInput(userInput);
+		checkCommand(userInput, false);
+		//handleUserInput(userInput);
 	}
 }
+
+void Shell::checkCommand(string userInput, int background){
+	size_t posAmp;
+	size_t posOr;
+	size_t forLoop;
+	size_t variable;
+
+	string tmp = "";
+
+	posAmp = userInput.find("&&");
+	posOr = userInput.find("||");
+	forLoop = userInput.find("for(");
+	variable = userInput.find("$");
+
+	if(userInput.compare(userInput.length()-1, 1, "&") == 0){
+		//check this commmand but this time with only the commands before
+		//the '&'
+		//TODO make sure this command runs in background!
+		checkCommand(userInput.substr(userInput.length()-1, userInput.length()), 1);
+		cout << "This process will be run in background" << endl;
+	}else if(posAmp != string::npos){
+		
+		string cmd = userInput.substr(0, posAmp); 
+		commands.push_front(cmd);
+		
+	}else if(posOr != string::npos){
+
+	}else if(forLoop != string::npos){
+
+	}else{
+
+	}
+}
+
+
+
+
 
 void Shell::handleUserInput(string userInput) {
 	//copying string to charArray
@@ -146,7 +184,6 @@ void Shell::handleUserInput(string userInput) {
 	//local variables
 	size_t pos;
 	string tmp;
-
 
 
 	if (userInput.compare(0, cmdSetDataPath.length(), cmdSetDataPath) == 0) {
@@ -176,8 +213,11 @@ void Shell::handleUserInput(string userInput) {
 		if(cmd > 47 && cmd < 58){
 			cmd = cmd - 48;
 			cout << "use this method: his.getExitStat(cmd);" << endl;
+			cout << "u gave wanted exit status for command : " << cmd << endl;
+
 		}else{
 			cout << "Could not find command#: " << input[3] << endl; 
+
 		}
 
 	}else if(userInput.substr(0, 7) == "CPUMAX="){
@@ -190,7 +230,10 @@ void Shell::handleUserInput(string userInput) {
 		int percentage = atoi(tmp.substr(0, (int) pos).c_str());
 		int seconds = atoi(tmp.substr((int) pos + 1, tmp.length()).c_str());
 
-		cout << "use this method: restrictCPU(seconds, percentage);" << endl;
+		cout << "use this method: restrictCPU(seconds, percentage)" << endl;
+		cout << "in ur case:" << endl;
+		cout << "seconds = " << seconds << endl;
+		cout << "percentage = " << percentage << endl;
 
 	}else if(userInput.substr(0,7) == "MEMMAX="){
 		//Assuming you can only set megabytes restriction
@@ -203,6 +246,10 @@ void Shell::handleUserInput(string userInput) {
 		int seconds = atoi ( tmp.substr((int) pos + 1, tmp.length()).c_str());
 
 		cout << "use this method: restrictMEM(megaBytes, seconds)" << endl;
+		cout << "in ur case:" << endl;
+		cout << "megaBytes = " << megaBytes << endl;
+		cout << "seconds = " << seconds << endl;
+
 
 	}else if(userInput.substr(0, 8) == "TIMEMAX="){
 		//restricts running time of program
@@ -213,6 +260,26 @@ void Shell::handleUserInput(string userInput) {
 		int seconds = atoi(tmp.c_str());
 
 		cout << "use this method to restrict running time for a prog: restrictRunningTime(seconds)" << endl;
+		cout << "in ur case:" << endl;
+		cout << "seconds = " << seconds << endl;
+
+
+
+	}else if(userInput.find("=") != string::npos && userInput.find(";") != string::npos){
+			//Initialize a new variable
+			pos = userInput.find(";");
+			//TODO THIS MUST BE DONE!
+			
+			cout << "hist.saveVariable(userInput.substr(0, pos));" << endl;
+
+			cout << "saved variable: " << userInput.substr(0, userInput.find("=")) << endl;
+
+	}else if(userInput.find("$") != string::npos){
+			//replace
+			
+			pos = userInput.find("$"); 
+
+
 	}
 }
 

@@ -47,6 +47,7 @@ private:
     void updateCurrentPath(char newPath[]);
 	 list<string> commands;
 	 void checkCommand(string userInput);
+	 void execForLoop(string command, int start, int end, int increment, int lessThan);
     void handleUserInput(string userInput);
     
     void launchProcess(Process *p, pid_t pgid, int infile, int outfile,

@@ -64,55 +64,30 @@ void Shell::initShell(){
 void Shell::setStartPath() {
 	char *currentPathPtr = currentPath;
 	char *currentDataPtr = currentData;
-	string cmd, data, path, tmp;
+	string cmd;
 	size_t found, found2;
-	struct stat st, st2;
-	char newData[1024];
-	char newPath[1024];
-	char dataP1[1024];
-	char dataP2[1024];
-	char pathP1[1024];
-	char pathP2[1024];
 	ifstream inFile;
 	inFile.open(".sh142");
+
 	if(inFile.is_open()) {
 		while(!inFile.eof()) {
 			getline(inFile, cmd);
 
 			found = cmd.find("DATA=");
 			if(found != string::npos) {
-				data = cmd;
+				strcpy(currentData, cmd.c_str());
 			}
 
 			found = cmd.find("PATH=");
 			if(found != string::npos) {
-				path = cmd;
+				strcpy(currentPath, cmd.c_str());
 			}
-		}
-
-		found = path.find("PATH=");
-		tmp = path.substr(found + 6, path.length());
-		strcpy(currentPath, tmp.c_str());
-		found2 = path.find(":");
-		found = path.copy(pathP1, found2 - 5, found + 5);
-		found = path.copy(pathP2, path.length(), found2 + 1);
-		if(!dirChecker(pathP1) || !dirChecker(pathP2)) {
-			getcwd(currentPathPtr, 1024);
-		}	
-
-		found = data.find("DATA=");
-		tmp = data.substr(found + 6, data.length());
-		strcpy(currentData, tmp.c_str());
-		found2 = data.find(":");
-		found = data.copy(dataP1, found2 - 5, found + 5);
-		found = data.copy(dataP2, data.length(), found2 + 1);
-		if(!dirChecker(dataP1) || !dirChecker(dataP2)) {
-			getcwd(currentDataPtr, 1024);
 		}
 	} else {
 		getcwd(currentPathPtr, 1024);
 		getcwd(currentDataPtr, 1024);
 	}
+	inFile.close();
 }
 
 void Shell::updateCurrentPath(char newPath[]) {

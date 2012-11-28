@@ -262,11 +262,11 @@ void Shell::handleUserInput(string userInput) {
 		if(userInput.substr(0,5) == cmdSetPath){
 			//set a persistent executable path
 
-			setEnvironment(userInput);
+			//TODO setEnvironment(userInput);
 
 		}else if(userInput.substr(0,5) == cmdSetDataPath){
 			//set a persistet data file path
-			setEnvironment(userInput);
+			//TODO setEnvironment(userInput);
 
 		}
 	}
@@ -353,22 +353,22 @@ void Shell::handleUserInput(string userInput) {
 
 		//TODO new command: fg tall, vil bare ha int'en i method: bringJobToForeground(int i);
 	}else if(userInput.find("|") != string::npos){
-         //list<string> cmds;
+         list<string> cmds;
          string tmp2;
          pos = userInput.find("|");
          tmp = userInput.substr(0, pos);
          tmp2 = userInput.substr(pos+2);
          
-         commands.push_front();
+         cmds.push_front(tmp);
 
          while(pos != string::npos){
              pos = tmp2.find("|");
              tmp = tmp2.substr(0,pos);
              tmp2 = tmp2.substr(pos+2);
-             commands.push_back(tmp);
+             cmds.push_back(tmp);
          }
 
-         preparePipeJob(commands);
+         preparePipeJob(cmds);
     
     
     }else{

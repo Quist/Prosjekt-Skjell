@@ -222,7 +222,7 @@ void Shell::checkCommand(string userInput){
 		}else{
 			return;
 		}
-		
+
 		execForLoop(command, start, goesTo, incrementing, lessThan);
 
 
@@ -280,20 +280,18 @@ void Shell::handleUserInput(string userInput) {
 	}  
 	 */
 
+     //preparePipeJob(Cmd[] );
+
 	if(userInput.length() > 5){
 
 		if(userInput.substr(0,5) == cmdSetPath){
 			//set a persistent executable path
 
-			//TODO make this method, taking a string
-			//representing the executable path
-			cout << "use this method : setNewPath(userInput.substr(5, userInput.length()));" << endl;
+			setEnvironment(userInput);
 
 		}else if(userInput.substr(0,5) == cmdSetDataPath){
 			//set a persistet data file path
-			//TODO make this method, taking a string, representing
-			//the path to the data file
-			cout << "use this method: setNewDataPath(userInput.substr(5, userInput.length()));" << endl;
+			setEnvironment(userInput);
 
 		}
 	}
@@ -379,7 +377,26 @@ void Shell::handleUserInput(string userInput) {
 		bringJobToForeground(jobNum);
 
 		//TODO new command: fg tall, vil bare ha int'en i method: bringJobToForeground(int i);
-	}else{
+	}else if(userInput.find("|") != string::npos){
+         //list<string> cmds;
+         string tmp2;
+         pos = userInput.find("|");
+         tmp = userInput.substr(0, pos);
+         tmp2 = userInput.substr(pos+2);
+         
+         commands.push_front();
+
+         while(pos != string::npos){
+             pos = tmp2.find("|");
+             tmp = tmp2.substr(0,pos);
+             tmp2 = tmp2.substr(pos+2);
+             commands.push_back(tmp);
+         }
+
+         preparePipeJob(commands);
+    
+    
+    }else{
 		//Could not find the command you specified
 
 		cout << "Preparing job..." << endl;

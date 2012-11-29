@@ -139,12 +139,13 @@ void Shell::checkCommand(string userInput){
     redirLess = userInput.find("<");
     redirBigger = userInput.find(">");
     redirLessTwo = userInput.find("2>");
-    
+
     if(userInput.compare(userInput.length()-1, 1, "&") == 0){
         //check this commmand but this time with only the commands before
         //the '&'
         //TODO make sure this command runs in background!
         foreground = 0;
+        userInput = userInput.substr(0, userInput.length()-1);
 
         //prepareJob(userInput.substr(0, userInput.length()-1), 0);
         //cout << "This process will be run in background" << endl;
@@ -218,6 +219,8 @@ void Shell::checkCommand(string userInput){
 
         execForLoop(tmps, start, goesTo, incrementing, lessThan);
 
+    }else if(userInput == "clearlist"){
+        checkJobs();
     }else{
         if(variable != string::npos && userInput.substr((int)variable+1,(int)variable+1) != "?"){
             string vari; 
@@ -447,7 +450,7 @@ int Shell::fileWriteOperation(string userInput){
         tmp = userInput.substr(0, pos);
         tmp2 = userInput.substr((int) pos+2, userInput.length());
 
-        cout << "Command: " << tmp << "filnavn: " << tmp2 << endl;
+        cout << "Command: " << tmp << "filname: " << tmp2 << endl;
         //TODO YOLO
         return 1;
     }
@@ -466,23 +469,14 @@ int Shell::saveVariable(string userInput){
 void Shell::handleUserInput(string userInput) {
 
     if(setPathOrData(userInput)){
-        cout << "setter path eller data" << endl;
     }else if(findCommandNum(userInput)){
-        cout << "finner command#" << endl;
     }else if(setCPUorMEM(userInput)){
-        cout << "setter CPU eller MEM" << endl;
     }else if(setTimeLim(userInput)){
-        cout << "setter TimeLimit" << endl;
     }else if(listJobs(userInput)){
-        cout << "lister jobber" << endl;
     }else if(bringToForeground(userInput)){
-        cout << "sender til foreground" << endl;
     }else if(makePipeJob(userInput)){
-        cout << "lager pipe job" << endl;
     }else if(fileWriteOperation(userInput)){
-        cout << "skrive operation" << endl;
     }else if(saveVariable(userInput)){
-        cout << "saver variable" << endl;
     }else{
         prepareJob(userInput, foreground);
     }
@@ -580,7 +574,6 @@ void Shell::launchJob(Job *j, int foreground) {
 
         /*setting up pipes*/
         if (p->next) {
-            cout << "CAME HERE!";
 
             if (pipe(mypipe) < 0) {
                 perror ("pipe");
@@ -816,6 +809,8 @@ bool Shell::dirChecker(char dir[]) {
 }
 
 void Shell::showJobs() {
+
+    //checkJobs();
     Job *j;
     for (j = firstJob; j; j = j->nextJob) {
         cout << j->pgid << " \t" << j->name << "\n";
@@ -862,21 +857,46 @@ void Shell::killJob(int pgid) {
 }
 
 void Shell::removeJob(int pgid) {
-    Job *j = firstJob;
-
+    //Job *j = firstJob;
+    int cnt = 0;
     if(!firstJob){
         return;
     }
 
-    if(pgid == firstJob->pgid){
+    while (pgid != firstJob->pgid) {
+        addJob(firstJob);
         firstJob = firstJob->nextJob;
+        if(cnt++ == 10) {
+            return;
+        }
     }
+    firstJob = firstJob->nextJob;
+}
+
+void Shell::checkJobs(){
+    Job *j = firstJob;
     for (j = firstJob; j; j = j->nextJob) {
-        if (j->nextJob) {
-            if (j->nextJob->pgid == pgid) {
-                j->nextJob = j->nextJob->nextJob;
+        checkJob(j);
+    }
+   
+    //while(j){
+    //    checkJob(j);
+    //    j = j->nextJob;
+    //}
+}
+void Shell::checkJob(Job *j){
+    for(Process *p = j->firstProcess; p;p = p->next){ 
+        int exitStatus = waitpid(p->pid, &p->status, WNOHANG);
+        if(exitStatus != 0) {
+            if(exitStatus == -1) {
+                his.addExitStat(0);
+                if(p->next == NULL) {
+                    removeJob(j->pgid);
+                }
+            } else {
+                //cout << "ELse";
+                his.addExitStat(-1);
             }
         }
-
-    }
+    } 
 }

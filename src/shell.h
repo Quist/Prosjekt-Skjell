@@ -83,6 +83,8 @@ class Shell {
         int makePipeJob(string userInput);
         int fileWriteOperation(string userInput);
         int saveVariable(string userInput);
+        void checkJobs();
+        void checkJob(Job *j);
 
 
         //Shell commands:

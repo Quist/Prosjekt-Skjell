@@ -25,14 +25,16 @@ class Job {
 public:
     Job(Process *p, string name);
     string name;
+    
+    //standard i/o channels:
     int stdin;
     int stdout;
-    int stderr; /* standard i/o channels */
+    int stderr; 
     
     Process *firstProcess;
     Job *nextJob;
     pid_t pgid;
-    struct termios tmodes;      /* saved terminal modes */
+    struct termios tmodes; //Saved terminal mode
     time_t timeCreated;
     
     int outPutFile(const char* filename);

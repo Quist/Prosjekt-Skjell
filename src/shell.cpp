@@ -16,7 +16,6 @@ Shell::Shell() {
     setStartPath();
     cmdSetPath = "PATH=";
     cmdSetDataPath = "DATA=";
-    jobCount = 0;
     firstJob = NULL;
 }
 
@@ -86,23 +85,15 @@ void Shell::setStartPath() {
     }
     inFile.close();
 }
+
 void Shell::setEnv(string cmd){
     char *cString;
     cString = new char [cmd.size() + 1];
     strcpy(cString, cmd.c_str());
     if(putenv(cString) == 0){
-        cout <<"Enviroment change performed";
+        cout <<"Enviroment change performed\n";
     } else {
-        cout <<"Error setting enviroment";
-    }
-}
-
-void Shell::updateCurrentPath(char newPath[]) {
-    struct stat st;
-    if(stat(newPath, &st) == 0 && (((st.st_mode) & S_IFMT) == S_IFDIR)) {
-        strncpy(currentPath, newPath, 1024);
-    } else {
-        cout<<"Directory does not exist.";
+        cout <<"Error setting enviroment\n";
     }
 }
 
@@ -116,7 +107,6 @@ void Shell::orderLoop() {
             exit(0);
         }
         checkCommand(userInput);
-        //handleUserInput(userInput);
     }
 }
 
@@ -147,12 +137,8 @@ void Shell::checkCommand(string userInput){
     if(userInput.compare(userInput.length()-1, 1, "&") == 0){
         //check this commmand but this time with only the commands before
         //the '&'
-        //TODO make sure this command runs in background!
         foreground = 0;
         userInput = userInput.substr(0, userInput.length()-1);
-
-        //prepareJob(userInput.substr(0, userInput.length()-1), 0);
-        //cout << "This process will be run in background" << endl;
     }
 
     if(posAmp != string::npos || posOr != string::npos){
@@ -278,7 +264,6 @@ void Shell::execForLoop(list<string> command, int start, int end, int increment,
         }
     }
 }
-
 
 int Shell::setPathOrData(string userInput){
     if(userInput.length() > 5){
@@ -484,28 +469,13 @@ void Shell::handleUserInput(string userInput) {
     }
 }
 
-void Shell::test(string cmd) {
-
-    char *cString;
-    char *tokens[10];
-
-    cString = new char [cmd.size() + 1];
-    strcpy(cString, cmd.c_str());
-    char *token = strtok(cString, " ");
-
-    int i = 0;
-    while (token != NULL) {
-        tokens[i] = token;
-        i++;
-        token = strtok(NULL, " ");
-    }
-    tokens[i] = NULL;
-
-
-    Process *p = new Process(&*tokens);
-    launchProcess(p, 0, 0,0,0,1 );
-}
-
+/**
+ * Prepare a job with one process for execution.
+ * The first word in cmd will be the executing file.
+ * All words in cmd is past as arguments to the process
+ * @param cmd The command from user including arguments
+ * @param foreground
+ */
 void Shell::prepareJob(string cmd, int foreground) {
     char *cString;
     char *tokens[10];
@@ -530,6 +500,11 @@ void Shell::prepareJob(string cmd, int foreground) {
     launchJob(j, foreground);
 }
 
+/**
+ * Prepares a pipejob for execution.
+ * @param cmdList Each element in the list represents a process
+ * @param foreground
+ */
 void Shell::preparePipeJob(list<string> cmdList, int foreground){
     Job *j;
     Process *p;
@@ -563,6 +538,12 @@ void Shell::preparePipeJob(list<string> cmdList, int foreground){
     launchJob(j,foreground); 
 }
 
+/**
+ * Launches all processes in a job.
+ * If more then one, set's up pipes
+ * @param j
+ * @param foreground
+ */
 void Shell::launchJob(Job *j, int foreground) {
 
     Process *p = j->firstProcess;
@@ -634,93 +615,15 @@ void Shell::launchJob(Job *j, int foreground) {
 
 }
 
-void Shell::putJobInForeground(Job *j, int cont) {
-    //Gives the terminal to the job:
-    tcsetpgrp(foregroundTerminal, j->pgid);
-
-
-    //Sends continue signal to the job:
-    if (cont) {
-        tcsetattr(foregroundTerminal,TCSADRAIN, &j->tmodes);
-        if (kill(-j->pgid, SIGCONT) < 0)
-            perror("kill (SIGCONT)");
-    }
-
-    waitForJob(j);
-
-    //Put the shell back in the foreground.
-    tcsetpgrp(foregroundTerminal, shellPGID);
-
-    // Restore the shell's terminal modes.
-    tcgetattr(foregroundTerminal, &j->tmodes);
-    tcsetattr(foregroundTerminal, TCSADRAIN, &shellMode);
-
-}
-
-void Shell::putJobInBackground(Job *j, int cont) {
-    // Send the job a continue signal:
-    if (cont) {
-        if (kill(-j->pgid, SIGCONT) < 0) {
-            perror("kill (SIGCONT)");
-        }
-    }
-}
-
-int Shell::markProcessStatus(pid_t pid, int status){
-    Job *j;
-    Process *p;
-
-    if(pid > 0){
-        for(j = firstJob; j; j = j->nextJob){
-            for(p = j->firstProcess; p; p= p->nextProcess){
-                /*Maybe change so only the process with the right pid is called.
-                 * The check is now done in the process method.
-                 */
-                return p->markProcessStatus(pid, status);
-            }
-        }
-    } else if(pid == 0 /*||errno == ECHILD*/){
-        //No processes to update
-        return -1;
-    } else {
-        //Error handler:
-        //perror("waitpid");
-        return -1;
-    }
-}
-
-void Shell::waitForJob(Job *j) {
-    int status;
-    pid_t pid;
-
-    do {
-        pid = waitpid(WAIT_ANY, &status, WUNTRACED);
-        his.addExitStat(status);
-    } while (!markProcessStatus(pid, status)
-            && !jobIsStopped(j)
-            && !jobIsCompleted(j));
-}
-
-//Return true if all processes in the job have stopped or completed. 
-int Shell::jobIsStopped(Job *j) {
-    Process *p;
-    for (p = j->firstProcess; p; p = p->nextProcess)
-        if (!p->completed && !p->stopped)
-            return 0;
-    return 1;
-}
-
-//Return true if all processes in the job have completed.
-int Shell::jobIsCompleted(Job *j) {
-    Process *p;
-
-    for (p = j->firstProcess; p; p = p->nextProcess)
-        if (!p->completed)
-            return 0;
-    return 1;
-}
-
-
+/**
+ * Launches a process in either background or foreground
+ * @param p
+ * @param pgid
+ * @param infile
+ * @param outfile
+ * @param errfile
+ * @param foreground
+ */
 void Shell::launchProcess(Process *p, pid_t pgid, int infile, int outfile,
         int errfile, int foreground){
 
@@ -774,40 +677,101 @@ void Shell::launchProcess(Process *p, pid_t pgid, int infile, int outfile,
 }
 
 
-void Shell::readFile(string fileName) {
-    string cmd;
-    ifstream inFile;
-    inFile.open(fileName.c_str());
+void Shell::putJobInForeground(Job *j, int cont) {
+    //Gives the terminal to the job:
+    tcsetpgrp(foregroundTerminal, j->pgid);
 
-    if (inFile.is_open()) {
-        while (!inFile.eof()) {
-            getline(inFile, cmd);
-            handleUserInput(cmd);
+
+    //Sends continue signal to the job:
+    if (cont) {
+        tcsetattr(foregroundTerminal,TCSADRAIN, &j->tmodes);
+        if (kill(-j->pgid, SIGCONT) < 0)
+            perror("kill (SIGCONT)");
+    }
+
+    waitForJob(j);
+
+    //Put the shell back in the foreground.
+    tcsetpgrp(foregroundTerminal, shellPGID);
+
+    // Restore the shell's terminal modes.
+    tcgetattr(foregroundTerminal, &j->tmodes);
+    tcsetattr(foregroundTerminal, TCSADRAIN, &shellMode);
+
+}
+
+void Shell::putJobInBackground(Job *j, int cont) {
+    // Send the job a continue signal:
+    if (cont) {
+        if (kill(-j->pgid, SIGCONT) < 0) {
+            perror("kill (SIGCONT)");
         }
+    }
+}
+
+void Shell::bringJobToForeground(int pgid){
+    Job *j = findJob(pgid);
+    if(j){
+        putJobInForeground(j, 1);
+    }
+}
+
+int Shell::markProcessStatus(pid_t pid, int status){
+    Job *j;
+    Process *p;
+
+    if(pid > 0){
+        for(j = firstJob; j; j = j->nextJob){
+            for(p = j->firstProcess; p; p= p->nextProcess){
+                /*Maybe change so only the process with the right pid is called.
+                 * The check is now done in the process method.
+                 */
+                return p->markProcessStatus(pid, status);
+            }
+        }
+    } else if(pid == 0 /*||errno == ECHILD*/){
+        //No processes to update
+        return -1;
     } else {
-        cout << "Cant find " + fileName + "\n";
+        //Error handler:
+        //perror("waitpid");
+        return -1;
     }
-    inFile.close();
 }
 
-void Shell::writeToFile(string fileName, list<string> l) {
-    string tmp;
-    ofstream toFile;
-    toFile.open(fileName.c_str(), ios::app);
-    while (!l.empty()) {
-        tmp = l.front();
-        l.pop_front();
-        toFile << tmp << endl;
-    }
-    toFile.close();
+void Shell::waitForJob(Job *j) {
+    int status;
+    pid_t pid;
+
+    do {
+        pid = waitpid(WAIT_ANY, &status, WUNTRACED);
+        his.addExitStat(status);
+    } while (!markProcessStatus(pid, status)
+            && !jobIsStopped(j)
+            && !jobIsCompleted(j));
 }
 
-bool Shell::dirChecker(char dir[]) {
-    struct stat st;
-    if(stat(dir, &st) == 0 && (((st.st_mode) & S_IFMT) == S_IFDIR)) {
-        return true;
-    }
-    return false;
+/**
+ * Return true if all processes in the job have stopped or completed. 
+ */
+int Shell::jobIsStopped(Job *j) {
+    Process *p;
+    for (p = j->firstProcess; p; p = p->nextProcess)
+        if (!p->completed && !p->stopped)
+            return 0;
+    return 1;
+}
+
+/*
+ Return true if all processes in the job have completed.
+ */
+int Shell::jobIsCompleted(Job *j) {
+    Process *p;
+
+    for (p = j->firstProcess; p; p = p->nextProcess)
+        if (!p->completed)
+            return 0;
+    return 1;
 }
 
 void Shell::showJobs() {
@@ -833,12 +797,6 @@ void Shell::addJob(Job *j) {
     }
 }
 
-void Shell::bringJobToForeground(int pgid){
-    Job *j = findJob(pgid);
-    if(j){
-        putJobInForeground(j, 1);
-    }
-}
 
 Job* Shell::findJob(int pgid){
     Job *j;

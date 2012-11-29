@@ -110,7 +110,7 @@ void Shell::orderLoop() {
     string userInput;
 
     while (true) {
-        cout << "sh142: ";
+        cout << "sh142->> ";
         getline(cin, userInput);
         if((userInput.compare(0, 4, "exit") == 0)) {
             exit(0);
@@ -140,6 +140,10 @@ void Shell::checkCommand(string userInput){
     redirBigger = userInput.find(">");
     redirLessTwo = userInput.find("2>");
 
+    if (userInput.length() == 0) {
+        return;
+    }
+    
     if(userInput.compare(userInput.length()-1, 1, "&") == 0){
         //check this commmand but this time with only the commands before
         //the '&'
@@ -151,10 +155,8 @@ void Shell::checkCommand(string userInput){
         //cout << "This process will be run in background" << endl;
     }
 
-    if(userInput.length() == 0){
-        //No command given
-    }else if(posAmp != string::npos || posOr != string::npos){
-
+    if(posAmp != string::npos || posOr != string::npos){
+        
     }else if(forLoop != string::npos){
         int incrementing = 0;
         int start;

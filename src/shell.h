@@ -33,6 +33,7 @@ class Shell {
         int foregroundTerminal;
         int interactive;
         int jobCount;
+        int foreground;
         Job *firstJob;
         list<string> commands;
         char currentPath[1024];
@@ -41,10 +42,12 @@ class Shell {
 
         void test(string cmd);
         void prepareJob(string cmd, int foreground);
+        void preparePipeJob(list<string> cmdList, int foreground);
         void testPiping();
 
         void initShell();
         void setStartPath();
+        void setEnv(string cmd);
         void updateCurrentPath(char newPath[]);
         void checkCommand(string userInput);
         void execForLoop(list<string> command, int start, int end, int increment, int lessThan);

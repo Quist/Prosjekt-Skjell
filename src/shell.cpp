@@ -62,8 +62,6 @@ void Shell::initShell(){
 }
 
 void Shell::setStartPath() {
-    char *currentPathPtr = currentPath;
-    char *currentDataPtr = currentData;
     string cmd;
     size_t found, found2;
     ifstream inFile;
@@ -76,18 +74,27 @@ void Shell::setStartPath() {
             found = cmd.find("DATA=");
             if(found != string::npos) {
                 strcpy(currentData, cmd.c_str());
+                putenv(currentData);
             }
 
             found = cmd.find("PATH=");
             if(found != string::npos) {
                 strcpy(currentPath, cmd.c_str());
+                putenv(currentPath);
             }
         }
-    } else {
-        getcwd(currentPathPtr, 1024);
-        getcwd(currentDataPtr, 1024);
     }
     inFile.close();
+}
+void Shell::setEnv(string cmd){
+    char *cString;
+    cString = new char [cmd.size() + 1];
+    strcpy(cString, cmd.c_str());
+    if(putenv(cString) == 0){
+        cout <<"Enviroment change performed";
+    } else {
+        cout <<"Error setting enviroment";
+    }
 }
 
 void Shell::updateCurrentPath(char newPath[]) {
@@ -114,6 +121,7 @@ void Shell::orderLoop() {
 }
 
 void Shell::checkCommand(string userInput){
+    foreground = 1;
     size_t posAmp;
     size_t posOr;
     size_t forLoop;
@@ -131,18 +139,21 @@ void Shell::checkCommand(string userInput){
     redirLess = userInput.find("<");
     redirBigger = userInput.find(">");
     redirLessTwo = userInput.find("2>");
+    
+    if(userInput.compare(userInput.length()-1, 1, "&") == 0){
+        //check this commmand but this time with only the commands before
+        //the '&'
+        //TODO make sure this command runs in background!
+        foreground = 0;
 
+        //prepareJob(userInput.substr(0, userInput.length()-1), 0);
+        //cout << "This process will be run in background" << endl;
+    }
 
     if(userInput.length() == 0){
         //No command given
     }else if(posAmp != string::npos || posOr != string::npos){
 
-    }else if(userInput.compare(userInput.length()-1, 1, "&") == 0){
-        //check this commmand but this time with only the commands before
-        //the '&'
-        //TODO make sure this command runs in background!
-        prepareJob(userInput.substr(0, userInput.length()-1), 0);
-        cout << "This process will be run in background" << endl;
     }else if(forLoop != string::npos){
         int incrementing = 0;
         int start;
@@ -192,7 +203,7 @@ void Shell::checkCommand(string userInput){
         }
 
         list<string> tmps;
-        
+
         while(tmp != "forend"){
             getline(cin, tmp);
             pos = tmp.find(";");
@@ -270,12 +281,12 @@ int Shell::setPathOrData(string userInput){
         if(userInput.substr(0,5) == cmdSetPath){
             //set a persistent executable path
 
-            //TODO setEnvironment(userInput);
+            setEnv(userInput);
             return 1;
 
         }else if(userInput.substr(0,5) == cmdSetDataPath){
             //set a persistet data file path
-            //TODO setEnvironment(userInput);
+            setEnv(userInput);
             return 1;
 
         }
@@ -410,7 +421,7 @@ int Shell::makePipeJob(string userInput){
             cmds.push_back(tmp);
         }
 
-        cout << "preparePipeJob(cmds);" << endl;
+        preparePipeJob(cmds, foreground);
         return 1;
     }
     return 0;
@@ -473,7 +484,7 @@ void Shell::handleUserInput(string userInput) {
     }else if(saveVariable(userInput)){
         cout << "saver variable" << endl;
     }else{
-        prepareJob(userInput, 1);
+        prepareJob(userInput, foreground);
     }
 }
 
@@ -521,6 +532,39 @@ void Shell::prepareJob(string cmd, int foreground) {
     Job *j = new Job(p, cmd);
 
     launchJob(j, foreground);
+}
+
+void Shell::preparePipeJob(list<string> cmdList, int foreground){
+    Job *j;
+    Process *p;
+
+    int index = 0;
+    while(!cmdList.empty()) {
+        string cmd = cmdList.front();
+        cmdList.pop_front();
+        char *cString;
+        char *tokens[10];
+
+        cString = new char [cmd.size() + 1];
+        strcpy(cString, cmd.c_str());
+        char *token = strtok(cString, " ");
+        int i = 0;
+        while (token != NULL) {
+            tokens[i] = token;
+            i++;
+            token = strtok(NULL, " ");
+        }
+        tokens[i] = NULL;
+        if (index == 0) {
+            p = new Process(&*tokens);
+            j = new Job(p, cmd);
+        }else { 
+            p->next = new Process(&*tokens);
+            p = p->next;
+        }
+        index++;
+    }
+    launchJob(j,foreground); 
 }
 
 void Shell::launchJob(Job *j, int foreground) {
@@ -645,7 +689,7 @@ int Shell::markProcessStatus(pid_t pid, int status){
         return -1;
     } else {
         //Error handler:
-        perror("waitpid");
+        //perror("waitpid");
         return -1;
     }
 }

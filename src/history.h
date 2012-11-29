@@ -24,6 +24,6 @@ public:
    int getExitStat(int i);
    void addExitStat(int newExitStat);
    void saveVariable(string input);
-   char *getVariable(string input);
+   string getVariable(string input);
 
 };

@@ -70,16 +70,14 @@ void History::saveVariable(string input) {
 	key = input.substr(0, found);
 	path = input.substr(found + 1, input.length());
 
-	//if(dirChecker(path)) {
-	//	variables.insert(pair<string,string>(key,path));
-	//}
+	variables.insert(pair<string,string>(key,path));
 }
 
-char* History::getVariable(string input) {
+string History::getVariable(string input) {
 	string tmp;
 
 	it = variables.find(input);
 	tmp = it->second;
-	char *output = (char*)tmp.c_str();
-	return output;
+	//char *output = (char*)tmp.c_str();
+	return tmp;
 }

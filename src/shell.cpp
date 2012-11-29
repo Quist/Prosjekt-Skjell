@@ -103,7 +103,7 @@ void Shell::orderLoop() {
     string userInput;
 
     while (true) {
-        cout << "SHELL-MOFO - >>> ";
+        cout << "sh142: ";
         getline(cin, userInput);
         if((userInput.compare(0, 4, "exit") == 0)) {
             exit(0);
@@ -183,10 +183,10 @@ void Shell::checkCommand(string userInput){
 
         pos = lengthTmp.find("<");
         if(pos == string::npos){
-            lessThan = 1;
+            lessThan = 0;
             pos = lengthTmp.find(">");
         }else{
-            lessThan = 0;
+            lessThan = 1;
         }
 
         if(pos != string::npos){
@@ -197,13 +197,13 @@ void Shell::checkCommand(string userInput){
         }else{
             return;
         }
-
+        cout << "Command: " << command << "\nStart: " << start << "\nGoesTo: " << goesTo << "\nIncr: " << incrementing << "\nLess?: " << lessThan << endl;
         execForLoop(command, start, goesTo, incrementing, lessThan);
 
 
 
     }else{
-        if(variable != string::npos){
+        if(variable != string::npos && userInput.substr((int)variable+1,(int)variable+1) != "?"){
             string vari; 
             int count = 0;
             int scnt = 0;
@@ -430,7 +430,6 @@ int Shell::saveVariable(string userInput){
 
     if(userInput.find("=") != string::npos){
         his.saveVariable(userInput); 
-        cout << "Was here" << endl;
         return 1;
     }
     return 0;
@@ -439,14 +438,23 @@ int Shell::saveVariable(string userInput){
 void Shell::handleUserInput(string userInput) {
 
     if(setPathOrData(userInput)){
+        cout << "setter path eller data" << endl;
     }else if(findCommandNum(userInput)){
+        cout << "finner command#" << endl;
     }else if(setCPUorMEM(userInput)){
+        cout << "setter CPU eller MEM" << endl;
     }else if(setTimeLim(userInput)){
+        cout << "setter TimeLimit" << endl;
     }else if(listJobs(userInput)){
+        cout << "lister jobber" << endl;
     }else if(bringToForeground(userInput)){
+        cout << "sender til foreground" << endl;
     }else if(makePipeJob(userInput)){
+        cout << "lager pipe job" << endl;
     }else if(fileWriteOperation(userInput)){
+        cout << "skrive operation" << endl;
     }else if(saveVariable(userInput)){
+        cout << "saver variable" << endl;
     }else{
         prepareJob(userInput, 1);
     }

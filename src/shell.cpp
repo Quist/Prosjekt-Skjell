@@ -135,21 +135,14 @@ void Shell::checkCommand(string userInput){
 
     if(userInput.length() == 0){
         //No command given
+    }else if(posAmp != string::npos || posOr != string::npos){
+
     }else if(userInput.compare(userInput.length()-1, 1, "&") == 0){
         //check this commmand but this time with only the commands before
         //the '&'
         //TODO make sure this command runs in background!
         prepareJob(userInput.substr(0, userInput.length()-1), 0);
         cout << "This process will be run in background" << endl;
-    }else if(posAmp != string::npos){
-
-        string cmd = userInput.substr(0, posAmp); 
-        commands.push_front(cmd);
-        cmd = userInput.substr(posAmp);
-        commands.push_front(cmd);
-
-    }else if(posOr != string::npos){
-
     }else if(forLoop != string::npos){
         int incrementing = 0;
         int start;
@@ -202,6 +195,12 @@ void Shell::checkCommand(string userInput){
         
         while(tmp != "forend"){
             getline(cin, tmp);
+            pos = tmp.find(";");
+            if(pos != string::npos){
+                if((int) pos == tmp.length()-1){
+                    tmp = tmp.substr(0, pos);
+                }
+            }
             tmps.push_back(tmp);
         }
         tmps.pop_back();

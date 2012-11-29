@@ -237,13 +237,13 @@ void Shell::execForLoop(list<string> command, int start, int end, int increment,
         if(increment){
             for(int i = start; i < end; i++){
                 for(it= command.begin(); it!= command.end(); it++){
-                    cout << *it << endl;
+                    checkCommand(*it);
                 }
             }
         }else{
             for(int i = start; i < end; i--){
                 for(it= command.begin(); it!= command.end(); it++){
-                    cout << *it << endl;
+                    checkCommand(*it);
                 }
             }
         }
@@ -251,13 +251,13 @@ void Shell::execForLoop(list<string> command, int start, int end, int increment,
         if(increment){
             for(int i = start; i > end; i++){
                 for(it= command.begin(); it!= command.end(); it++){
-                    cout << *it << endl;
+                    checkCommand(*it);
                 }
             }
         }else{
             for(int i = start; i > end; i--){
                 for(it= command.begin(); it!= command.end(); it++){
-                    cout << *it << endl;
+                    checkCommand(*it);
                 }
             }
         }

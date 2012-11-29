@@ -47,7 +47,7 @@ class Shell {
         void setStartPath();
         void updateCurrentPath(char newPath[]);
         void checkCommand(string userInput);
-        void execForLoop(string command, int start, int end, int increment, int lessThan);
+        void execForLoop(list<string> command, int start, int end, int increment, int lessThan);
         void handleUserInput(string userInput);
 
         void launchProcess(Process *p, pid_t pgid, int infile, int outfile,

@@ -164,7 +164,7 @@ void Shell::checkCommand(string userInput){
         string tmp = userInput.substr(pos);
 
         pos = tmp.find(")");
-        command = tmp.substr(pos+2,tmp.length());
+        //command = tmp.substr(pos+2,tmp.length());
         tmp = tmp.substr(0, (int) pos);
 
         if(strncmp(tmp.substr(tmp.length()-2, tmp.length()).c_str(), "++", 2) == 0){
@@ -197,10 +197,16 @@ void Shell::checkCommand(string userInput){
         }else{
             return;
         }
-        cout << "Command: " << command << "\nStart: " << start << "\nGoesTo: " << goesTo << "\nIncr: " << incrementing << "\nLess?: " << lessThan << endl;
-        execForLoop(command, start, goesTo, incrementing, lessThan);
 
+        list<string> tmps;
+        
+        while(tmp != "forend"){
+            getline(cin, tmp);
+            tmps.push_back(tmp);
+        }
+        tmps.pop_back();
 
+        execForLoop(tmps, start, goesTo, incrementing, lessThan);
 
     }else{
         if(variable != string::npos && userInput.substr((int)variable+1,(int)variable+1) != "?"){
@@ -223,25 +229,36 @@ void Shell::checkCommand(string userInput){
     }
 }
 
-void Shell::execForLoop(string command, int start, int end, int increment, int lessThan){
+void Shell::execForLoop(list<string> command, int start, int end, int increment, int lessThan){
+    string tmp;
+    list<string>::iterator it;
+
     if(lessThan){
         if(increment){
             for(int i = start; i < end; i++){
-                checkCommand(command);
+                for(it= command.begin(); it!= command.end(); it++){
+                    cout << *it << endl;
+                }
             }
         }else{
             for(int i = start; i < end; i--){
-                checkCommand(command);
+                for(it= command.begin(); it!= command.end(); it++){
+                    cout << *it << endl;
+                }
             }
         }
     }else{
         if(increment){
             for(int i = start; i > end; i++){
-                checkCommand(command);
+                for(it= command.begin(); it!= command.end(); it++){
+                    cout << *it << endl;
+                }
             }
         }else{
             for(int i = start; i > end; i--){
-                checkCommand(command);
+                for(it= command.begin(); it!= command.end(); it++){
+                    cout << *it << endl;
+                }
             }
         }
     }
@@ -418,8 +435,9 @@ int Shell::fileWriteOperation(string userInput){
         }
 
         tmp = userInput.substr(0, pos);
-        tmp2 = userInput.substr(pos+2);
+        tmp2 = userInput.substr((int) pos+2, userInput.length());
 
+        cout << "Command: " << tmp << "filnavn: " << tmp2 << endl;
         //TODO YOLO
         return 1;
     }
